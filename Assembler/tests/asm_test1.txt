@@ -1,0 +1,11 @@
+push 5
+push 6
+mul
+push 4
+push -1
+push 9
+mul
+mul
+sub
+out
+hlt
