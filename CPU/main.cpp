@@ -1,10 +1,11 @@
 #include <stdio.h>
 
-
 #include "Processor.h"
 
 
-void main()
+int main()
 {
+    puts("ѕроцессор:");
+
     ProcessorConstructor("D:\\язык C\\Processor\\tests\\asm_out.asm");
 }

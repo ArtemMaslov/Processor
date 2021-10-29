@@ -27,6 +27,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Logs\Logs.cpp">
       <Filter>Logs</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)FilesFormat.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)StringLibrary\StringLibrary.h">
@@ -44,5 +45,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Logs\Logs.h">
       <Filter>Logs</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandsEnum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FilesFormat.h" />
   </ItemGroup>
 </Project>

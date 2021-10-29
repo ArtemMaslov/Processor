@@ -6,69 +6,66 @@
 #include "Processor.h"
 #include "..\Libraries\StringLibrary\StringLibrary.h"
 #include "..\Libraries\CommandsEnum.h"
+#include "..\Libraries\FilesFormat.h"
 
-
-bool ReadFile(FILE* file, ProcessorStructure* cpu);
 
 void GetDoubleArg(char* code, size_t* ip, double* number);
 
-bool ParseProcessor(ProcessorStructure* cpu);
+bool ParseText(ProcessorStructure* cpu);
 
 
 void ProcessorConstructor(const char* inputFileName)
 {
     assert(inputFileName);
     
-    FILE* stackLogs = fopen("StackLibraryLogs.html", "w");
-    FILE* file = fopen(inputFileName, "rb");
-
-    if (file && stackLogs)
+    if (FILE* stackLogs = OpenFile("StackLibraryLogs.html", "w"))
     {
         stackLogFile = stackLogs;
         StackLogConstructor(stackLogFile);
 
         ProcessorStructure cpu = {};
 
-        if (ReadFile(file, &cpu))
+        if (FILE* inputFile = OpenFile(inputFileName, "rb"))
         {
-            StackConstructor(&cpu.stack, sizeof(double));
+            FileHeader header = ReadFileHeader(inputFile);
 
-            ParseProcessor(&cpu);
+            if (header.Signature == ProcessorFileHeader.Signature)
+            {
+                if (header.ProcessorVersion == ProcessorFileHeader.ProcessorVersion &&
+                    header.AssemblerVersion == ProcessorFileHeader.AssemblerVersion)
+                {
+                    if (ReadFile(&cpu.text, &header, inputFile))
+                    {
+                        cpu.text.bufferSize--;
+
+                        StackConstructor(&cpu.stack, sizeof(double));
+
+                        ParseText(&cpu);
+                    }
+                }
+                else
+                    printf("Текущая версия процессора %d\n"
+                           "Версия процессора в файле %d\n"
+                           "Текущая версия ассемблера %d\n"
+                           "Версия ассемблера в файле %d\n",
+                        ProcessorFileHeader.ProcessorVersion, header.ProcessorVersion,
+                        ProcessorFileHeader.AssemblerVersion, header.AssemblerVersion);
+            }
+            else 
+                printf("Неопознанная сигнатура файла <%s>", header.Signature);
+            fclose(inputFile);
         }
-        fclose(file);
         fclose(stackLogs);
     }
 }
 
-bool ReadFile(FILE* file, ProcessorStructure* cpu)
-{
-    assert(file);
-    assert(cpu);
-
-    size_t fileSize = GetFileSize(file) + 1;
-
-    cpu->code = (char*)calloc(fileSize, sizeof(char));
-    cpu->codeLength = fileSize;
-
-    size_t readed = fread(cpu->code, sizeof(char), fileSize, file);
-
-    if (readed == 0)
-    {
-        puts("Ошибка чтения файла.");
-        return false;
-    }
-    cpu->code[readed] = '\0';
-
-    return true;
-}
-
-bool ParseProcessor(ProcessorStructure* cpu)
+bool ParseText(ProcessorStructure* cpu)
 {
     assert(cpu);
 
-    char* code = cpu->code;
+    char* code = cpu->text.buffer;
     size_t ip = cpu->instructionPointer;
-    size_t codeLength = cpu->codeLength;
+    size_t codeLength = cpu->text.bufferSize;
     Stack* stk = &cpu->stack;
     
     while (ip < codeLength)

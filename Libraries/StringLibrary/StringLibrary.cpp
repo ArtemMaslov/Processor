@@ -3,50 +3,43 @@
 #include <stdlib.h>
 
 #include "StringLibrary.h"
+#include "..\FilesFormat.h"
 
-bool ReadFile(Text* text, const char* fileName)
+bool ReadFile(Text* text, FileHeader* header, FILE* file)
 {
     assert(text);
-    assert(fileName);
+    assert(header);
+    assert(file);
 
-    text->buffer = nullptr;
-    text->bufferSize = 0;
-    text->strings = nullptr;
+    text->buffer       = nullptr;
+    text->bufferSize   = 0;
+    text->strings      = nullptr;
     text->stringsCount = 0;
-    FILE* file = fopen(fileName, "r");
 
-    if (file)
+    size_t fileSize = header->BodySize;
+
+    text->buffer = (char*)calloc(fileSize + 1, sizeof(char));// Прибавляем 1, чтобы в конце файла был нуль-терминатор
+
+    if (text->buffer)
     {
-        size_t fileSize = GetFileSize(file);
+        size_t readed = fread(text->buffer, sizeof(char), fileSize, file);
+        text->bufferSize = readed + 1;
 
-        text->buffer = (char*)calloc(fileSize + 1, sizeof(char));// Прибавляем 1, чтобы в конце файла был нуль-терминатор
-
-        if (text->buffer)
+        if (readed == 0)
         {
-            size_t readed = fread(text->buffer, sizeof(char), fileSize, file);
-            text->bufferSize = readed + 1;
-
-            if (readed == 0)
-            {
-                puts("Ошибка чтения файла.");
-                return false;
-            }
-            text->buffer[readed] = '\0';
-        }
-        else
-        {
-            puts("Ошибка выделения памяти.");
+            puts("Ошибка чтения файла.");
             return false;
         }
-
-        fclose(file);
-        return true;
+        text->buffer[readed] = '\0';
     }
     else
-        printf("Ошибка открытия файла <%s>\n", fileName);
+    {
+        puts("Ошибка выделения памяти.");
+        return false;
+    }
 
-    return false;
-
+    fclose(file);
+    return true;
 }
 
 void ParseFileToLines(Text* text)

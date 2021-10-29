@@ -3,6 +3,7 @@
 
 
 #include <stdio.h>
+#include "..\FilesFormat.h"
 
 struct String
 {
@@ -18,7 +19,7 @@ struct Text
     String* strings;
 };
 
-bool ReadFile(Text* text, const char* fileName);
+bool ReadFile(Text* text, FileHeader* header, FILE* file);
 
 void ParseFileToLines(Text* text);
 

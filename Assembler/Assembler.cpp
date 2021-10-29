@@ -6,6 +6,7 @@
 #include "..\Libraries\StringLibrary\StringLibrary.h"
 #include "Assembler.h"
 #include "..\Libraries\CommandsEnum.h"
+#include "..\Libraries\FilesFormat.h"
 
 
 static AssemblerCommand GetNextCommand(char** buffer);
@@ -14,12 +15,12 @@ static bool GetNextDoubleArgument(char** buffer, double* number);
 
 static bool GetNextIntArgument(char** buffer, int* number);
 
-static bool ParseText(Assembler* assembler, FILE* outputFile);
+static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile);
 
-static bool IgnoreComment(char** buffer, const char* const src);
+static bool IgnoreComment(char** buffer);
 
 
-void AssemblerConstructor(const char* inputFileName, const char* outputFileName)
+void AssemblerConstructor(const char* inputFileName, const char* outputFileName, const char* listingFileName)
 {
     assert(inputFileName);
     assert(outputFileName);
@@ -28,39 +29,53 @@ void AssemblerConstructor(const char* inputFileName, const char* outputFileName)
     assembler.text = {};
     assembler.bufferIndex = 0;
 
-    bool res = ReadFile(&assembler.text, inputFileName);
+    if (FILE* inputFile = OpenFile(inputFileName, "r"))
+    {
+        FileHeader header = {};
+        header.BodySize = GetFileSize(inputFile);
+        bool res = ReadFile(&assembler.text, &header, inputFile);
     
-    if (res)
-    {
-        ParseFileToLines(&assembler.text);
-    }
+        if (res)
+        {
+            if (FILE* outputFile = OpenFile(outputFileName, "wb"))
+            {
+                if (FILE* listingFile = OpenFile(outputFileName, "w"))
+                {
+                    ParseFileToLines(&assembler.text);
 
-    FILE* outputFile = fopen(outputFileName, "wb");
-
-    if (outputFile)
-    {
-        ParseText(&assembler, outputFile);
-        fclose(outputFile);
+                    ParseText(&assembler, outputFile, listingFile);
+                    fclose(outputFile);
+                }
+            }
+        }
+        fclose(inputFile);
     }
-    else
-        printf("Ошибка открытия файла <%s>\n", outputFileName);
 }
 
-static bool ParseText(Assembler* assembler, FILE* outputFile)
+static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile)
 {
     assert(assembler);
     assert(outputFile);
+
+    FileHeader header = ProcessorFileHeader;
+    fwrite(&header, sizeof(FileHeader), 1, outputFile);
 
     char*   buffer       = assembler->text.buffer;
     String* strings      = assembler->text.strings;
     size_t  bufferSize   = assembler->text.bufferSize;
     size_t  stringsCount = assembler->text.stringsCount;
 
-    bool hlt = false;
-    size_t instructionPointer = 0;
+    bool    hlt = false;
+    size_t  instructionPointer = 0;
+    size_t  commandsCount = 0;
+
     for (size_t st = 0; st < stringsCount && !hlt; st++)
     {
         char* string = buffer + strings[st].startIndex;
+        
+        if (IgnoreComment(&string))
+            continue;
+
         AssemblerCommand cmd = GetNextCommand(&string);
         
         switch (cmd)
@@ -78,7 +93,7 @@ static bool ParseText(Assembler* assembler, FILE* outputFile)
                 }
                 else
                 {
-                    printf("Ошибка чтения аргумента <%s>\n", buffer + strings->startIndex);
+                    printf("Ошибка чтения аргумента <%s>\n", buffer + strings[st].startIndex);
                     return false;
                 }
                 break;
@@ -101,7 +116,7 @@ static bool ParseText(Assembler* assembler, FILE* outputFile)
                 }
                 else
                 {
-                    printf("Ошибка чтения аргумента <%s>\n", buffer + strings->startIndex);
+                    printf("Ошибка чтения аргумента <%s>\n", buffer + strings[st].startIndex);
                     return false;
                 }
                 break;
@@ -123,15 +138,20 @@ static bool ParseText(Assembler* assembler, FILE* outputFile)
                 hlt = true;
                 break;
             default:
-                printf("Неизвестная команда <%s>\n", buffer + strings->startIndex);
+                printf("Неизвестная команда <%s>\n", buffer + strings[st].startIndex);
                 return false;
         }
-        IgnoreComment(&string, buffer + strings->startIndex);
+
+        commandsCount++;
+        if (!IgnoreComment(&string))
+            printf("Ошибка чтения комманды <%s>", buffer + strings[st].startIndex);
     }
 
     if (hlt)
     {
-        fputc('\0', outputFile);
+        fseek(outputFile, HeaderFileSizeOffset, SEEK_SET);
+        fwrite(&instructionPointer, sizeof(instructionPointer), 1, outputFile);
+        fwrite(&commandsCount, sizeof(commandsCount), 1, outputFile);
         return true;
     }
     else
@@ -160,7 +180,8 @@ static AssemblerCommand GetNextCommand(char** buffer)
                     break;
                 }
             }
-            if (cmp && ((*buffer)[st1] == ' ' || (*buffer)[st1] == '\n' || (*buffer)[st1] == '\0'))
+            if (cmp && ((*buffer)[st1] == ' ' || (*buffer)[st1] == '\n' ||
+                (*buffer)[st1] == '\0' || (*buffer)[st1] == ';'))
             {
                 *(buffer) += st1;
                 return (AssemblerCommand)st;
@@ -182,7 +203,7 @@ static bool GetNextDoubleArgument(char** buffer, double* number)
 
     if (readed == 1)
     {
-        *(buffer) += stringOffset;
+        (*buffer) += stringOffset;
         return true;
     }
     else
@@ -200,18 +221,17 @@ static bool GetNextIntArgument(char** buffer, int* number)
 
     if (readed == 1)
     {
-        *(buffer) += stringOffset;
+        (*buffer) += stringOffset;
         return true;
     }
     else
         return false;
 }
 
-static bool IgnoreComment(char** buffer, const char* const src)
+static bool IgnoreComment(char** buffer)
 {
     assert(buffer);
     assert(*buffer);
-    assert(src);
 
     bool res = true;
     while (**buffer)
@@ -219,16 +239,11 @@ static bool IgnoreComment(char** buffer, const char* const src)
         if (!isspace(**buffer))
         {
             if (**buffer == ';')
-            {
                 return true;
-            }
             else
-            {
-                printf("Ошибка чтения комманды <%s>", src);
                 return false;
-            }
         }
-        *buffer++;
+        (*buffer)++;
     }
     return true;
 }

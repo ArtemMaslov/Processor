@@ -3,12 +3,12 @@
 
 
 #include "..\Libraries\StackLibrary\Stack.h"
+#include "..\Libraries\StringLibrary\StringLibrary.h"
 
 struct ProcessorStructure
 {
-    char   *code;
+    Text   text;
     size_t instructionPointer;
-    size_t codeLength;
     Stack  stack;
 };
 
