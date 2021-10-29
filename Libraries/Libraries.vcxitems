@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{b41d820d-d068-44b2-a78c-fd802fa9adb5}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandsEnum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Logs\Logs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\Stack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\StackDiagnostic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\StackProtection.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)StringLibrary\StringLibrary.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Logs\Logs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)StackLibrary\Stack.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)StackLibrary\StackDiagnostic.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)StackLibrary\StackProtection.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)StringLibrary\StringLibrary.cpp" />
+  </ItemGroup>
+</Project>

@@ -9,5 +9,6 @@ int main()
     SetConsoleOutputCP(1251);
 
 
-    AssemblerConstructor("D:\\язык C\\Processor\\Assembler\\formate.txt");
+    AssemblerConstructor("D:\\язык C\\Processor\\tests\\asm_test1.code", 
+                         "D:\\язык C\\Processor\\tests\\asm_out.asm");
 }

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="StackLibrary">
+      <UniqueIdentifier>{78b8cdf5-77e7-4877-8516-0cf45afa7379}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StringLibrary">
+      <UniqueIdentifier>{4a6de8e6-2ece-43ec-bf4e-cd16189e0934}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Logs">
+      <UniqueIdentifier>{4be4ccc0-e64e-4d8c-b2d8-85ccfa3cc84d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)StringLibrary\StringLibrary.cpp">
+      <Filter>StringLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)StackLibrary\Stack.cpp">
+      <Filter>StackLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)StackLibrary\StackDiagnostic.cpp">
+      <Filter>StackLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)StackLibrary\StackProtection.cpp">
+      <Filter>StackLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Logs\Logs.cpp">
+      <Filter>Logs</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)StringLibrary\StringLibrary.h">
+      <Filter>StringLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\Stack.h">
+      <Filter>StackLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\StackDiagnostic.h">
+      <Filter>StackLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\StackProtection.h">
+      <Filter>StackLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Logs\Logs.h">
+      <Filter>Logs</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

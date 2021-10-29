@@ -2,7 +2,7 @@
 #define ASSEMBLER_H_
 
 
-#include "StringLibrary.h"
+#include "..\Libraries\StringLibrary\StringLibrary.h"
 
 struct Assembler
 {
@@ -13,9 +13,9 @@ struct Assembler
 };
 
 
-void AssemblerConstructor(const char* fileName);
+void AssemblerConstructor(const char* fileName, const char* outputFileName);
 
-void ParseText(Assembler* assembler);
+
 
 
 #endif // ! ASSEMBLER_H_

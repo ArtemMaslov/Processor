@@ -1,33 +1,55 @@
 #include <stdio.h>
 #include <assert.h>
+#include <ctype.h>
 
 
-#include "StringLibrary.h"
+#include "..\Libraries\StringLibrary\StringLibrary.h"
 #include "Assembler.h"
-#include "CommandsEnum.h"
+#include "..\Libraries\CommandsEnum.h"
 
 
-void AssemblerConstructor(const char* fileName)
+static AssemblerCommand GetNextCommand(char** buffer);
+
+static bool GetNextDoubleArgument(char** buffer, double* number);
+
+static bool GetNextIntArgument(char** buffer, int* number);
+
+static bool ParseText(Assembler* assembler, FILE* outputFile);
+
+static bool IgnoreComment(char** buffer, const char* const src);
+
+
+void AssemblerConstructor(const char* inputFileName, const char* outputFileName)
 {
-    assert(fileName);
+    assert(inputFileName);
+    assert(outputFileName);
 
     Assembler assembler = {};
     assembler.text = {};
     assembler.bufferIndex = 0;
 
-    bool res = ReadFile(&assembler.text, fileName);
+    bool res = ReadFile(&assembler.text, inputFileName);
     
     if (res)
     {
         ParseFileToLines(&assembler.text);
     }
 
-    ParseText(&assembler);
+    FILE* outputFile = fopen(outputFileName, "wb");
+
+    if (outputFile)
+    {
+        ParseText(&assembler, outputFile);
+        fclose(outputFile);
+    }
+    else
+        printf("Ошибка открытия файла <%s>\n", outputFileName);
 }
 
-void ParseText(Assembler* assembler)
+static bool ParseText(Assembler* assembler, FILE* outputFile)
 {
     assert(assembler);
+    assert(outputFile);
 
     char*   buffer       = assembler->text.buffer;
     String* strings      = assembler->text.strings;
@@ -35,50 +57,94 @@ void ParseText(Assembler* assembler)
     size_t  stringsCount = assembler->text.stringsCount;
 
     bool hlt = false;
-    for (int st = 0; st < stringsCount; st++)
+    size_t instructionPointer = 0;
+    for (size_t st = 0; st < stringsCount && !hlt; st++)
     {
-        char* string = buffer + strings->startIndex;
-        AssemblerCommand cmd = GetNextCommand(string);
+        char* string = buffer + strings[st].startIndex;
+        AssemblerCommand cmd = GetNextCommand(&string);
         
-        switch (st)
+        switch (cmd)
         {
             case CMD_PUSH:
-                double value = 0;
-                if (GetNextDoubleArgument(string, &value))
+            {
+                double doubleVal = 0;
+                if (GetNextDoubleArgument(&string, &doubleVal))
                 {
+                    fprintf(outputFile, "%c", CMD_PUSH);
+                    instructionPointer += commandSize;
 
+                    fwrite(&doubleVal, sizeof(double), 1, outputFile);
+                    instructionPointer += sizeof(double);
                 }
                 else
+                {
                     printf("Ошибка чтения аргумента <%s>\n", buffer + strings->startIndex);
+                    return false;
+                }
                 break;
+            }
             case CMD_POP:
+                fprintf(outputFile, "%c", CMD_POP);
+                instructionPointer += commandSize;
                 break;
             case CMD_IN:
+            {
+                double doubleVal = 0;
+                puts("Введите число:");
+                if (scanf("%lf", &doubleVal))
+                {
+                    fprintf(outputFile, "%c", CMD_PUSH);
+                    instructionPointer += commandSize;
+                    
+                    fwrite(&doubleVal, sizeof(double), 1, outputFile);
+                    instructionPointer += sizeof(double);
+                }
+                else
+                {
+                    printf("Ошибка чтения аргумента <%s>\n", buffer + strings->startIndex);
+                    return false;
+                }
                 break;
+            }
             case CMD_OUT:
+                fprintf(outputFile, "%c", CMD_OUT);
+                instructionPointer += commandSize;
                 break;
             case CMD_ADD:
-                break;
             case CMD_SUB:
-                break;
             case CMD_MUL:
-                break;
             case CMD_DIV:
+                fprintf(outputFile, "%c", cmd);
+                instructionPointer += commandSize;
                 break;
             case CMD_HLT:
+                fprintf(outputFile, "%c", cmd);
+                instructionPointer += commandSize;
                 hlt = true;
                 break;
             default:
                 printf("Неизвестная команда <%s>\n", buffer + strings->startIndex);
-                return;
+                return false;
         }
+        IgnoreComment(&string, buffer + strings->startIndex);
     }
 
+    if (hlt)
+    {
+        fputc('\0', outputFile);
+        return true;
+    }
+    else
+    {
+        puts("Не обнаружена комманда hlt в конце программы");
+        return false;
+    }
 }
 
-AssemblerCommand GetNextCommand(const char** buffer)
+static AssemblerCommand GetNextCommand(char** buffer)
 {
     assert(buffer);
+    assert(*buffer);
 
     while (**buffer)
     {
@@ -86,66 +152,83 @@ AssemblerCommand GetNextCommand(const char** buffer)
         {
             bool cmp = true;
             int st1 = 0;
-            for (; st1 < sizeof(CommandsName[st]) / sizeof(char); st1++)
+            for (const char* cmd = CommandsName[st]; cmd[st1]; st1++)
             {
-                if (buffer[st1] != CommandsName[st][st1])
+                if ((*buffer)[st1] != CommandsName[st][st1])
                 {
                     cmp = false;
                     break;
                 }
             }
-            if (cmp && (buffer[st1] == ' ' || buffer[st1] == '\n'))
+            if (cmp && ((*buffer)[st1] == ' ' || (*buffer)[st1] == '\n' || (*buffer)[st1] == '\0'))
             {
-                switch (st)
-                {
-                    case CMD_PUSH:
-                        return CMD_PUSH;
-                    case CMD_POP:
-                        return CMD_POP;
-                    case CMD_IN:
-                        return CMD_IN;
-                    case CMD_OUT:
-                        return CMD_OUT;
-                    case CMD_ADD:
-                        return CMD_ADD;
-                    case CMD_SUB:
-                        return CMD_SUB;
-                    case CMD_MUL:
-                        return CMD_MUL;
-                    case CMD_DIV:
-                        return CMD_DIV;
-                    case CMD_HLT:
-                        return CMD_HLT;
-                    default:
-                        return CMD_UNKNOWN;
-                }
+                *(buffer) += st1;
+                return (AssemblerCommand)st;
             }
         }
-        buffer++;
+        (*buffer)++;
     }
     return CMD_UNKNOWN;
 }
 
-bool GetNextDoubleArgument(const char* buffer, double* number)
+static bool GetNextDoubleArgument(char** buffer, double* number)
 {
-    int readed = sscanf(buffer, " %lf", number);
+    assert(buffer);
+    assert(*buffer);
+    assert(number);
+
+    int stringOffset = 0;
+    int readed = sscanf(*buffer, " %lf%n", number, &stringOffset);
 
     if (readed == 1)
     {
+        *(buffer) += stringOffset;
         return true;
     }
     else
         return false;
 }
 
-double GetNextIntArgument(const char* buffer, int* number)
+static bool GetNextIntArgument(char** buffer, int* number)
 {
-    int readed = sscanf(buffer, " %d", number);
+    assert(buffer);
+    assert(*buffer);
+    assert(number);
+
+    int stringOffset = 0;
+    int readed = sscanf(*buffer, " %d%n", number, &stringOffset);
 
     if (readed == 1)
     {
+        *(buffer) += stringOffset;
         return true;
     }
     else
         return false;
+}
+
+static bool IgnoreComment(char** buffer, const char* const src)
+{
+    assert(buffer);
+    assert(*buffer);
+    assert(src);
+
+    bool res = true;
+    while (**buffer)
+    {
+        if (!isspace(**buffer))
+        {
+            if (**buffer == ';')
+            {
+                return true;
+            }
+            else
+            {
+                printf("Ошибка чтения комманды <%s>", src);
+                return false;
+            }
+        }
+        *buffer++;
+    }
+    return true;
 }

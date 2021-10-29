@@ -192,7 +192,7 @@ void StackDump_(Stack *stack, FILE *file,
 
     if (stackError > 0)
     {
-        fprintf(file, "Errors:\n", stackError);
+        fprintf(file, "Errors:\n");
 
         int arrayIndex = 1;
         while (stackError > 0)
@@ -216,8 +216,8 @@ void StackDump_(Stack *stack, FILE *file,
         fprintf(file, "%*s stackSize     = %zd\n", leftOffset1, "", stack->stackSize);
         fprintf(file, "%*s stackCapacity = %zd\n", leftOffset1, "", stack->stackCapacity);
         
-        fprintf(file, "%*s dataCRC       = %ld\n", leftOffset1, "", stack->dataCRC);
-        fprintf(file, "%*s stackCRC      = %ld\n", leftOffset1, "", stack->stackCRC);
+        fprintf(file, "%*s dataCRC       = %lld\n", leftOffset1, "", stack->dataCRC);
+        fprintf(file, "%*s stackCRC      = %lld\n", leftOffset1, "", stack->stackCRC);
         
         fprintf(file, "%*s canaryRight   = %#llX\n", leftOffset1, "", stack->canaryRight);
 

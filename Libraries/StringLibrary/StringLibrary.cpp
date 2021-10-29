@@ -43,7 +43,7 @@ bool ReadFile(Text* text, const char* fileName)
         return true;
     }
     else
-        printf("Не удаётся открыть файл '%s'\n", fileName);
+        printf("Ошибка открытия файла <%s>\n", fileName);
 
     return false;
 
@@ -56,7 +56,7 @@ void ParseFileToLines(Text* text)
     char* ptr = text->buffer;
     size_t stringsCount = 0;
     bool stringStarted = false;
-    for (int st = 0; st < text->bufferSize; st++)
+    for (size_t st = 0; st < text->bufferSize; st++)
     {
         if (ptr[st] != '\n' && ptr[st] != ' ' && ptr[st] != '\t' && !stringStarted)
         {
@@ -80,7 +80,7 @@ void ParseFileToLines(Text* text)
         size_t stringIndex = 0;
         stringStarted = false;
 
-        for (int st = 0; st < bufferSize; st++)
+        for (size_t st = 0; st < bufferSize; st++)
         {
             if (st == bufferSize - 2)
                 puts("");
@@ -120,15 +120,15 @@ void WriteTextToFile(Text* text, const char* fileName)
 
     if (file)
     {
-        for (int st = 0; st < text->stringsCount; st++)
+        for (size_t st = 0; st < text->stringsCount; st++)
         {
             char c = buffer[strings[st].startIndex];
             fputs(buffer + strings[st].startIndex, file);
             fputs("\n",file);
         }
+        fclose(file);
     }
 
-    fclose(file);
 }
 
 size_t GetFileSize(FILE* file)

@@ -35,9 +35,3 @@
 .vs/*
 */Debug/*
 Debug/*
-*.vcxproj
-*.vcxitems
-*.editorconfig
-*.filters
-*.user
-*.sln

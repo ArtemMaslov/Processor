@@ -144,7 +144,7 @@ void* StackPop(Stack *stack, int *error = nullptr);
 int   ValidateStack(Stack *stack);
 
 //#define StackDump(stack, file, programm_function_name, programm_file, programm_line) \
-StackDump_(stack, file, #stack, __FUNCTION__, __FILE__, __LINE__, programm_function_name, programm_file, programm_line);
+//StackDump_(stack, file, #stack, __FUNCTION__, __FILE__, __LINE__, programm_function_name, programm_file, programm_line);
 
 /**
  * @brief       Выводит детальную информацию о текущем состоянии стека.

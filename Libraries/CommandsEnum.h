@@ -4,6 +4,7 @@
 
 //#define DEF_CMD (name, commandNumber, argumentCount, ...) CMD_##name = commandNumber,
 
+const size_t commandSize = sizeof(char);
 
 enum AssemblerCommand
 {
@@ -22,7 +23,7 @@ enum AssemblerCommand
 
 char CommandsName[][5] = 
 {
-    "hlt",
+    "",
     "push",
     "pop",
     "in",
@@ -30,7 +31,8 @@ char CommandsName[][5] =
     "add",
     "sub",
     "mul",
-    "div"
+    "div",
+    "hlt",
 };
 
 //#undef DEF_CMD

@@ -180,7 +180,7 @@ static Stack* StackResize(Stack *stack, int *error)
 
     assert(stack);
 
-    int oldCapacity = stack->stackCapacity;
+    size_t oldCapacity = stack->stackCapacity;
     bool shouldResize = false;
 
     if (stack->stackCapacity == 0)
@@ -249,8 +249,8 @@ static Stack* StackResize(Stack *stack, int *error)
 static size_t CalculateDecreasedCapacity(size_t oldCapacity, size_t stackSize, bool* shouldResize)
 {
     size_t proportionalCapacity = (oldCapacity * (0.5 - STACK_CAPACITY_DECREASE_COEFFICIENT)) > 0 ? 
-                                   oldCapacity * (0.5 - STACK_CAPACITY_DECREASE_COEFFICIENT) : 0;
-    size_t deltaCapacity        = (oldCapacity / 2.0 - STACK_MIN_CAPACITY) > 0 ? oldCapacity / 2.0 - STACK_MIN_CAPACITY : 0;
+                                   (size_t)(oldCapacity * (0.5 - STACK_CAPACITY_DECREASE_COEFFICIENT)) : 0;
+    size_t deltaCapacity        = (oldCapacity / 2.0 - STACK_MIN_CAPACITY) > 0 ? (size_t)(oldCapacity / 2.0 - STACK_MIN_CAPACITY) : 0;
     size_t calculatedCapacity   = proportionalCapacity < deltaCapacity ? proportionalCapacity : deltaCapacity;
 
     calculatedCapacity = calculatedCapacity < STACK_MIN_CAPACITY ? STACK_MIN_CAPACITY : calculatedCapacity;
