@@ -11,7 +11,8 @@ int main()
 
     puts("јссемблер:");
 
-    AssemblerConstructor("D:\\язык C\\Processor\\tests\\asm_test1.code", 
+    AssemblerConstructor("D:\\язык C\\Processor\\tests\\asm_src\\asm_test1.code", 
                          "D:\\язык C\\Processor\\tests\\asm_out.asm",
-                         "D:\\язык C\\Processor\\tests\\asm_listing.txt");
+                         "D:\\язык C\\Processor\\tests\\asm_listing.txt",
+                         "D:\\язык C\\Processor\\tests\\AsmLogs.html");
 }

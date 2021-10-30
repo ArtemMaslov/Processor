@@ -8,7 +8,7 @@
 
 int TextOffset = 0;
 
-void LogConstructor(FILE *file)
+void LogConstructor(FILE *file, const char* caption)
 {
     assert(file);
 
@@ -20,34 +20,19 @@ void LogConstructor(FILE *file)
     char* date = (char*)calloc(dateLength, sizeof(char));
 
     if (date)
-    {
         strftime(date, dateLength, "%H:%M:%S %d.%m.%Y", curTime);
 
-        fprintf(file, "<html>\n"
-                      "<head><title>Лог бибилотеки StackLibrary.</title><style>font {line-height: 0.8;} body {background-color: #404040;} head {background-color: #404040;}</style></head>\n"
-                      "<body>\n"
-                      "<h1><font color=\"99B333\">Лог бибилотеки StackLibrary. %s</font></h1>\n", date);
+    fprintf(file, "<html>\n"
+                    "<head><title>Лог бибилотеки %s.</title><style>font {line-height: 0.8;} body {background-color: #404040;} head {background-color: #404040;}</style></head>\n"
+                    "<body>\n"
+                    "<h1><font color=\"99B333\">Лог бибилотеки %s. %s</font></h1>\n", caption, caption, date);
 
-        TextOffset = ftell(file);
+    TextOffset = ftell(file);
 
-        fputs("</body>\n"
-              "</html>\n", file);
-        TextOffset -= ftell(file);
-        free(date);
-    }
-    else
-    {
-        fprintf(file, "<html>\n"
-                      "<head><title>Лог бибилотеки StackLibrary.</title><style>font {line-height: 0.8;} body {background-color: #404040;} head {background-color: #404040;}</style></head>\n"
-                      "<body>\n"
-                      "<h1><font color=\"99B333\">Лог бибилотеки StackLibrary.</font></h1>\n");
-        
-        TextOffset = ftell(file);
-
-        fputs("</body>\n"
-              "</html>\n", file);
-        TextOffset -= ftell(file);
-    }
+    fputs("</body>\n"
+            "</html>\n", file);
+    TextOffset -= ftell(file);
+    free(date);
 }
 
 /**
@@ -61,9 +46,10 @@ void LogDestructor(FILE* file)
 }
 
 /**
- * @brief         Добавляет строку в файл логов.
- * @param file    Указатель на поток вывода.
- * @param message Строка, которую необходимо добавить.
+ * @brief          Добавляет строку в файл логов.
+ * @param file     Указатель на поток вывода.
+ * @param message  Строка, которую необходимо добавить.
+ * @param logLevel Уровень сообщения: DEBUG, WARNING, ERROR
 */
 void LogLine(FILE* file, const char* message, int logLevel)
 {

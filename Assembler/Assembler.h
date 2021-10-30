@@ -10,7 +10,8 @@ struct Assembler
     size_t bufferIndex;
 };
 
-void AssemblerConstructor(const char* inputFileName, const char* outputFileName, const char* listingFileName);
+void AssemblerConstructor(const char* inputFileName, const char* outputFileName, const char* listingFileName,
+                          const char* asmLogFileName);
 
 
 #endif // ! ASSEMBLER_H_

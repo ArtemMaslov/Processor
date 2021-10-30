@@ -6,6 +6,7 @@
 
 
 #include "Disassembler.h"
+#include "..\Libraries\Logs\Logs.h"
 #include "..\Libraries\CommandsEnum.h"
 #include "..\Libraries\FilesFormat.h"
 

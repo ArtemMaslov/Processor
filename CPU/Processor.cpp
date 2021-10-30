@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "Processor.h"
+#include "..\Libraries\Logs\Logs.h"
 #include "..\Libraries\StringLibrary\StringLibrary.h"
 #include "..\Libraries\CommandsEnum.h"
 #include "..\Libraries\FilesFormat.h"
@@ -11,14 +12,18 @@
 
 void GetDoubleArg(char* code, size_t* ip, double* number);
 
+void GetRegArg(char* code, size_t* ip, size_t* regIndex);
+
 bool ParseText(ProcessorStructure* cpu);
 
 
-void ProcessorConstructor(const char* inputFileName)
+void ProcessorConstructor(const char* inputFileName, const char* stackLogFileName, const char* cpuLogFileName)
 {
     assert(inputFileName);
+    assert(stackLogFileName);
+    assert(cpuLogFileName);
     
-    if (FILE* stackLogs = OpenFile("StackLibraryLogs.html", "w"))
+    if (FILE* stackLogs = OpenFile(stackLogFileName, "w"))
     {
         stackLogFile = stackLogs;
         StackLogConstructor(stackLogFile);
@@ -70,28 +75,66 @@ bool ParseText(ProcessorStructure* cpu)
     
     while (ip < codeLength)
     {
-        int error = 0;
-        double number1 = 0;
-        double number2 = 0;
-        switch (code[ip++])
+        int error       = 0;
+        double number1  = 0;
+        double number2  = 0;
+        size_t regIndex = 0;
+
+        Command cmd = {};
+        memmove(&cmd, &(code[ip++]), sizeof(Command));
+
+        switch (cmd.type)
         {
             case CMD_PUSH:
-                GetDoubleArg(code, &ip, &number1);
+            {
+                double regValue = 0;
+                if (cmd.params & PushParamReg > 0)
+                {
+                    GetRegArg(code, &ip, &regIndex);
+                    if (regIndex >= regsCount)
+                    {
+                        printf("IndexOutOfRangeRegister = %d", regIndex);
+                        return false;
+                    }
+                    regValue = cpu->regs[regIndex];
+                }
+                if (cmd.params & PushParamNumber > 0)
+                {
+                    GetDoubleArg(code, &ip, &number1);
+                }
+                number1 += regValue;
                 StackPush(stk, &number1);
                 break;
+            }
             case CMD_POP:
-                StackPop(stk, &error);
+            {
+                if (cmd.params & PushParamReg > 0)
+                {
+                    GetRegArg(code, &ip, &regIndex);
+                    if (regIndex >= regsCount)
+                    {
+                        printf("IndexOutOfRangeRegister = %d", regIndex);
+                        return false;
+                    }
+                    cpu->regs[regIndex] = *((double*)StackPop(stk, &error));
+                }
+                else
+                    StackPop(stk, &error);
                 if (error > 0)
                     StackDump(stk, stdout);
                 break;
+            }
             case CMD_OUT:
+            {
                 number1 = *((double*)StackPop(stk, &error));
                 if (error > 0)
                     StackDump(stk, stdout);
 
                 printf("%lf", number1);
                 break;
+            }
             case CMD_ADD:
+            {
                 number1 = *((double*)StackPop(stk, &error));
                 if (error > 0)
                     StackDump(stk, stdout);
@@ -103,7 +146,9 @@ bool ParseText(ProcessorStructure* cpu)
                 number2 += number1;
                 StackPush(stk, &number2);
                 break;
+            }
             case CMD_SUB:
+            {
                 number1 = *((double*)StackPop(stk, &error));
                 if (error > 0)
                     StackDump(stk, stdout);
@@ -115,7 +160,9 @@ bool ParseText(ProcessorStructure* cpu)
                 number2 -= number1;
                 StackPush(stk, &number2);
                 break;
+            }
             case CMD_MUL:
+            {
                 number1 = *((double*)StackPop(stk, &error));
                 if (error > 0)
                     StackDump(stk, stdout);
@@ -127,7 +174,9 @@ bool ParseText(ProcessorStructure* cpu)
                 number2 *= number1;
                 StackPush(stk, &number2);
                 break;
+            }
             case CMD_DIV:
+            {
                 number1 = *((double*)StackPop(stk, &error));
                 if (error > 0)
                     StackDump(stk, stdout);
@@ -139,6 +188,7 @@ bool ParseText(ProcessorStructure* cpu)
                 number2 /= number1;
                 StackPush(stk, &number2);
                 break;
+            }
             case CMD_HLT:
                 return true;
             default:
@@ -167,3 +217,12 @@ void GetDoubleArg(char* code, size_t* ip, double* number)
     *ip += sizeof(double);
 }
 
+void GetRegArg(char* code, size_t* ip, size_t* regIndex)
+{
+    assert(code);
+    assert(ip);
+    assert(regIndex);
+
+    memmove(regIndex, code + *ip, sizeof(char));
+    *ip += sizeof(char);
+}

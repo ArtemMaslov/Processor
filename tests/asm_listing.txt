@@ -1,0 +1,13 @@
+Ћистинг компил€ции файла <D:\язык C\Processor\tests\asm_out.asm>
+јдрес            “екст                Ѕинарный код                  
+0                push 5.000000                                      
+0x9              push 6.000000                                      
+0x12             mul                                                
+0x13             push 4.000000                                      
+0x1c             push -1.000000                                     
+0x25             push 9.000000                                      
+0x2e             mul                                                
+0x2f             mul                                                
+0x30             mul                                                
+0x31             out                                                
+0x32             hlt                                                

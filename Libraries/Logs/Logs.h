@@ -13,10 +13,11 @@ enum LogLevel
 };
 
 /**
- * @brief      Констркуктор файла логов.
- * @param file Указатель на поток вывода.
+ * @brief         Конструктор файла логов.
+ * @param file    Указатель на поток вывода.
+ * @param caption Заголовок файла логов
 */
-void LogConstructor(FILE *file);
+void LogConstructor(FILE *file, const char* caption);
 
 /**
  * @brief      Закрывает файл логов.

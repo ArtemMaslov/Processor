@@ -8,10 +8,10 @@
 void CreateListingFileHeader(FILE* file, const char* fileName)
 {
     fprintf(file, "Листинг компиляции файла <%s>\n", fileName);
-    fprintf(file, "%16s %20s %30s", "Адрес", "Текст", "Бинарный код");
+    fprintf(file, "%-16s %-*s %-*s\n", "Адрес", ListingMessageLength, "Текст", ListingBinCodeLength, "Бинарный код");
 }
 
-void AddLineToListing(FILE* file, size_t ip, const char* msg, const char* bin)
+void ListingAddLine(FILE* file, size_t ip, const char* msg, const char* bin)
 {
-    fprintf(file, "%-16xd %20s %30s", ip, msg, bin);
+    fprintf(file, "%#-16x %-*s %-*s\n", ip, ListingMessageLength, msg, ListingBinCodeLength, bin);
 }

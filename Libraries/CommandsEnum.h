@@ -2,9 +2,21 @@
 #define COMMANDS_ENUM_H_
 
 
+
 //#define DEF_CMD (name, commandNumber, argumentCount, ...) CMD_##name = commandNumber,
 
 const size_t commandSize = sizeof(char);
+
+const int PushParamNumber = 1;
+const int PushParamReg    = 2;
+
+struct Command
+{
+    int RAM    :1;
+    int params :2;
+    int type   :5;
+};
+
 
 enum AssemblerCommand
 {
@@ -21,7 +33,7 @@ enum AssemblerCommand
     CMD_HLT      = 9,
 };
 
-char CommandsName[][5] = 
+const char CommandsName[][5] = 
 {
     "",
     "push",
@@ -35,6 +47,24 @@ char CommandsName[][5] =
     "hlt",
 };
 
-//#undef DEF_CMD
+const char regNames[][3] = 
+{
+    "qx",
+    "wx",
+    "ex",
+    "rx",
+    "tx",
+    "yx",
+
+    "ax",
+    "sx",
+    "dx",
+    "fx",
+    "gx",
+    "hx",
+};
+
+const size_t regsCount = sizeof(regNames) / sizeof(regNames[0]);
+
 
 #endif

@@ -23,7 +23,7 @@ static size_t CalculateDecreasedCapacity(size_t oldCapacity, size_t stackSize, b
 
 void StackLogConstructor(FILE* file)
 {
-    LogConstructor(file);
+    LogConstructor(file, "StackLibrary");
 }
 
 
