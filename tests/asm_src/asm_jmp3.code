@@ -1,0 +1,26 @@
+push 0
+pop ax
+next:
+
+jb s:
+push ax
+push 10
+ja stop:
+
+jae r
+push ax
+push ax
+mul
+out
+s:
+n:
+r:
+jne jne
+push ax
+push 1
+add
+pop ax
+jmp next
+
+stop:
+hlt

@@ -152,7 +152,7 @@ void* StackPop(Stack *stack, int *error)
 #endif
         if (error)
             *error |= STACKERR_STACK_IS_EMPTY;
-        StackDump(stack, stackLogFile);
+        //StackDump(stack, stackLogFile);
         return nullptr;
     }
     

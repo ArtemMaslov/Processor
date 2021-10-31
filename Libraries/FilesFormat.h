@@ -11,6 +11,7 @@ struct FileHeader
     size_t HeaderSize;
     size_t BodySize;
     size_t CommandsCount;
+    int    _reserved         :32;
 };
 
 const size_t HeaderFileSizeOffset = sizeof(int) * 4 + sizeof(size_t);

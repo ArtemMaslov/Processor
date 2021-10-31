@@ -1,0 +1,23 @@
+push 10
+push 0
+pop qx
+push 1
+pop wx
+push 2
+pop ex
+pop [qx]
+push 1
+pop [wx]
+push 25
+pop [ex]
+push [qx]
+push [qx]
+mul
+push 4
+push [wx]
+push [ex]
+mul
+mul
+sub
+out
+hlt

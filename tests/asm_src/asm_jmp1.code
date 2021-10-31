@@ -1,0 +1,15 @@
+push 8
+push 6
+jmp add
+add
+add:
+sub
+jmp push
+mul
+div
+;arrgh
+push:
+push 10
+mul
+out
+hlt
