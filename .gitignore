@@ -35,3 +35,7 @@
 .vs/*
 */Debug/*
 Debug/*
+CPU/x64/*
+Assembler/x64/*
+Disassembler/x64/*
+Debug/x64/*
