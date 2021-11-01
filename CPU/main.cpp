@@ -10,7 +10,7 @@ int main()
     SetConsoleOutputCP(1251);
     puts("ѕроцессор:");
 
-    ProcessorConstructor("D:\\язык C\\Processor\\tests\\task_fact.asm",
+    ProcessorConstructor("code.asm",
                          "D:\\язык C\\Processor\\tests\\StackLibraryLogs.html",
                          "D:\\язык C\\Processor\\tests\\CpuLogs.html");
 }
