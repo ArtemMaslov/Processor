@@ -47,5 +47,7 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandsEnum.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FilesFormat.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandsDef.h" />
   </ItemGroup>
 </Project>

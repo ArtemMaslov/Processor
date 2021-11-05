@@ -2,16 +2,47 @@
 #define ASSEMBLER_H_
 
 
+#include <stdio.h>
 #include "..\Libraries\StringLibrary\StringLibrary.h"
+
+const size_t FixUpsCount = 512;
+const size_t LabelsCount = 128;
+const size_t LabelNameLength = 32;
+
+struct Label
+{
+    char*  msg    = nullptr;
+    size_t ip     = 0;
+    bool   inited = false;
+};
+
+struct FixUp
+{
+    size_t LabelIndex = 0;
+    long   fileIndex  = 0;
+};
 
 struct Assembler
 {
     Text   text;
     size_t bufferIndex;
+    
+    FileHeader header;
+    
+    Label* labels;
+    FixUp* fixUps;
+
+    size_t fixUpIndex;
+
+    FILE* outputFile;
+    FILE* listingFile;
 };
 
-void AssemblerConstructor(const char* inputFileName, const char* outputFileName, const char* listingFileName,
-                          const char* asmLogFileName);
+extern char* listingFileName;
+extern char* asmLogsFileName;
+extern char* outputFileName;
+
+void AssemblerConstructor(FILE* inputFile, FILE* outputFile, FILE* listingFile, FILE* asmLogFile);
 
 
 #endif // ! ASSEMBLER_H_

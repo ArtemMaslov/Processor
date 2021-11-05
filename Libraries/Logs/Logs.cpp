@@ -71,13 +71,13 @@ void LogLine(FILE* file, const char* message, int logLevel)
         switch (logLevel)
         {
             case DEBUG:
-                fprintf(file, "<pre><font color=\"5C65C0\">%s</font><font color=\"E0E0E0\">%s</font><\pre>\n", date, message);
+                fprintf(file, "<pre><font color=\"5C65C0\">%s</font><font color=\"E0E0E0\">%s</font><\\pre>\n", date, message);
                 break;
             case WARNING:
-                fprintf(file, "<pre><font color=\"5C65C0\">%s</font><font color=\"E89827\">%s</font><\pre>\n", date, message);
+                fprintf(file, "<pre><font color=\"5C65C0\">%s</font><font color=\"E89827\">%s</font><\\pre>\n", date, message);
                 break;
             case ERROR:
-                fprintf(file, "<pre><font color=\"5C65C0\">%s</font><font color=\"E84127\">%s</font><\pre>\n", date, message);
+                fprintf(file, "<pre><font color=\"5C65C0\">%s</font><font color=\"E84127\">%s</font><\\pre>\n", date, message);
                 break;
         }
         free(date);

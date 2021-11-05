@@ -27,5 +27,9 @@ FILE* OpenFile(const char* fileName, const char* mode);
 
 FileHeader ReadFileHeader(FILE* file);
 
+char* CreateOutFileName(char* src);
+
+int CallocString(char* dest, const char* src);
+
 
 #endif

@@ -9,42 +9,24 @@ const size_t commandSize = sizeof(char);
 const int PushParamNumber = 1;
 const int PushParamReg    = 2;
 
-struct Command
+union Command
 {
-    unsigned int RAM    :1;
-    unsigned int Reg    :1;
-    unsigned int Number :1;
-    unsigned int type   :5;
+    struct
+    {
+        unsigned int RAM    :1;
+        unsigned int Reg    :1;
+        unsigned int Number :1;
+        unsigned int type   :5;
+    };
+
+    unsigned char cmb_byte;
 };
 
+#define CMD_DEF(number, name, argc, code) cmd_##name = number,
 
 enum AssemblerCommand
 {
-//#include "..\CPU\Commands.h"
-    CMD_UNKNOWN  = 0,
-    CMD_PUSH     = 1,
-    CMD_POP      = 2,
-    CMD_IN       = 3,
-    CMD_OUT      = 4,
-    CMD_ADD      = 5,
-    CMD_SUB      = 6,
-    CMD_MUL      = 7,
-    CMD_DIV      = 8,
-    CMD_HLT      = 9,
-    CMD_JMP      = 10,
-    CMD_JA       = 11,
-    CMD_JAE      = 12,
-    CMD_JB       = 13,
-    CMD_JBE      = 14,
-    CMD_JE       = 15,
-    CMD_JNE      = 16,
-    CMD_CALL     = 17,
-    CMD_RET      = 18,
-    CMD_DSP      = 19,
-    CMD_COS      = 20,
-    CMD_SIN      = 21,
-    CMD_SQRT     = 22,
-    CMD_INT      = 23,
+#include "CommandsDef.h"
 };
 
 const char CommandsName[][5] = 
@@ -72,7 +54,8 @@ const char CommandsName[][5] =
     "cos",
     "sin",
     "sqrt",
-    "int"
+    "int",
+    "meow"
 };
 
 const char regNames[][3] = 

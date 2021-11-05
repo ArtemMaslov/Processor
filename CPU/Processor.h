@@ -21,6 +21,6 @@ struct ProcessorStructure
     double RAM[RamSize];
 };
 
-void ProcessorConstructor(const char* inputFileName, const char* stackLogFileName, const char* cpuLogFileName);
+void ProcessorConstructor(FILE* inputFile, FILE* stackLogFile, FILE* cpuLogFile);
 
 #endif

@@ -37,7 +37,7 @@ void WriteBytes(char* bin, const void* data, size_t dataSize)
     assert(bin);
     assert(data);
 
-    for (int st = 0; st < dataSize; st++)
+    for (size_t st = 0; st < dataSize; st++)
     {
         unsigned char byte = ((char*)data)[st];
         sprintf(bin + st * 3, "%02x ", byte);

@@ -14,7 +14,9 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandsDef.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandsEnum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FilesFormat.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Logs\Logs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\Stack.h" />

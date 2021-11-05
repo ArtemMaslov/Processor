@@ -1,7 +1,8 @@
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
-#include <ctype.h>
+//#include <stdio.h>
+//#include <assert.h>
+//#include <string.h>
+//#include <stdlib.h>
+//#include <ctype.h>
 
 
 #include "..\Libraries\StringLibrary\StringLibrary.h"
@@ -12,25 +13,10 @@
 #include "ListingCreator.h"
 
 
-static const size_t FixUpsCount = 512;
-static const size_t LabelsCount = 128;
-static const size_t LabelNameLength = 32;
-
-static FILE* logFile = nullptr;
-
-
-struct Label
-{
-    char   msg[LabelNameLength];
-    size_t ip;
-    bool   inited = false;
-};
-
-struct FixUp
-{
-    size_t LabelIndex;
-    long   fileIndex;
-};
+static FILE* logFile;
+char* listingFileName = nullptr;
+char* asmLogsFileName = nullptr;
+char* outputFileName = nullptr;
 
 
 static AssemblerCommand GetNextCommand(char** buffer);
@@ -39,7 +25,11 @@ static bool GetNextDoubleArgument(char** buffer, double* number);
 
 static bool GetNextIntArgument(char** buffer, int* number);
 
-static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile, const char* outputFileName);
+static bool ParseText(Assembler* assembler);
+
+static bool GenerateHeader(Assembler* assembler);
+
+static bool GenerateEnding(Assembler* assembler);
 
 static bool GetNextRegister(char** buffer, int* regIndex);
 
@@ -54,59 +44,98 @@ static bool GetLabelArg(char** buffer, char** start, size_t* length, bool* IsLab
 static bool ParseJmpCommand(char** buffer, Label* labels, size_t* labelIndex, FixUp* fixUps, size_t* fixUpIndex, FILE* outputFile);
 
 
-void AssemblerConstructor(const char* inputFileName, const char* outputFileName, const char* listingFileName,
-                          const char* asmLogFileName)
+void AssemblerConstructor(FILE* inputFile, FILE* outputFile, FILE* listingFile, FILE* asmLogFile)
 {
-    assert(inputFileName);
+    assert(inputFile);
+    assert(outputFile);
+    assert(listingFile);
+    assert(asmLogFile);
+
+    assert(listingFileName);
+    assert(asmLogsFileName);
     assert(outputFileName);
 
     Assembler assembler = {};
     assembler.text = {};
     assembler.bufferIndex = 0;
 
-    if (logFile = OpenFile(asmLogFileName, "w"))
+    FileHeader header = {};
+    header.BodySize = GetFileSize(inputFile);
+    bool res = ReadFile(&assembler.text, &header, inputFile);
+
+    logFile = asmLogFile;
+    
+    if (res)
     {
-        if (FILE* inputFile = OpenFile(inputFileName, "r"))
-        {
-            LogLine(logFile, "inputFile успешно открыт");
-
-            FileHeader header = {};
-            header.BodySize = GetFileSize(inputFile);
-            bool res = ReadFile(&assembler.text, &header, inputFile);
-            
-            if (res)
-            {
-                LogLine(logFile, "Файл успешно прочитан");
-                if (FILE* outputFile = OpenFile(outputFileName, "wb"))
-                {
-                    LogLine(logFile, "inputFile успешно открыт");
-                    if (FILE* listingFile = OpenFile(listingFileName, "w"))
-                    {
-                        ParseFileToLines(&assembler.text);
+        LogLine(logFile, "Файл успешно прочитан");
+        ParseFileToLines(&assembler.text);
                     
-                        CreateListingFileHeader(listingFile, nullptr, outputFileName);
+        CreateListingFileHeader(listingFile, nullptr, outputFileName);
 
-                        ParseText(&assembler, outputFile, listingFile, outputFileName);
+        assembler.labels = (Label*)calloc(LabelsCount, sizeof(Label));
+        assembler.fixUps = (FixUp*)calloc(FixUpsCount, sizeof(FixUp));
 
-                        fclose(outputFile);
-                    }
-                }
-            }
-            fclose(inputFile);
-        }
-        fclose(logFile);
+        bool result = false;
+
+        GenerateHeader(&assembler);
+
+        ParseText(&assembler);
+
+        GenerateEnding(&assembler);
+
+        free(assembler.labels);
+        free(assembler.fixUps);
     }
 }
 
-static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile, const char* outputFileName)
+static bool GenerateHeader(Assembler* assembler)
+{
+    assembler->header = ProcessorFileHeader;
+    fwrite(&assembler->header, sizeof(FileHeader), 1, assembler->outputFile);
+
+    return true;
+}
+
+#define CMD_DEF(number, name, argc, ...)                                                                \
+    LogLine(logFile, #name);                                                                            \
+    sprintf(listingMsg, #name);                                                                         \
+    sprintf(listingBin, "%02x ", cmd.cmd_byte);                                                         \
+                                                                                                        \
+    case cmd_##name:                                                                                    \
+    {                                                                                                   \
+        switch(argc)                                                                                    \
+        {                                                                                               \
+            case -1:                                                                                    \
+                if (!ParseArgument(&string, cmdType, &ip, outputFile, listingMsg, listingBin))          \
+                    return false;                                                                       \
+                break;                                                                                  \
+            case -2:                                                                                    \
+                fwrite(&cmd, commandSize, 1, outputFile);                                               \
+                ip += commandSize;                                                                      \
+                                                                                                        \
+                if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile))   \
+                {                                                                                       \
+                    printf("Ошибка чтения строки <%s>", string);                                        \
+                    return false;                                                                       \
+                }                                                                                       \
+                size_t ip_null = 0;                                                                     \
+                fwrite(&ip_null, sizeof(size_t), 1, outputFile);                                        \
+                ip += sizeof(size_t);                                                                   \
+                break;                                                                                  \
+            default:                                                                                    \
+                fwrite(&cmd, commandSize, 1, outputFile);                                               \
+                ip += commandSize;                                                                      \
+                break;                                                                                  \
+        }                                                                                               \
+    }
+
+static bool ParseText(Assembler* assembler)
 {
     assert(assembler);
-    assert(outputFile);
 
     LogLine(logFile, "ParseText");
 
-    FileHeader header = ProcessorFileHeader;
-    fwrite(&header, sizeof(FileHeader), 1, outputFile);
+    FILE* outputFile = assembler->outputFile;
 
     char*   buffer       = assembler->text.buffer;
     String* strings      = assembler->text.strings;
@@ -117,10 +146,10 @@ static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile,
     size_t  ip  = 0;
     size_t  commandsCount = 0;
     size_t  labelsIndex   = 0;
-    size_t  fixUpsIndex   = 0;
+    size_t  fixUpIndex   = 0;
 
-    Label labels[LabelsCount] = {};
-    FixUp fixUps[FixUpsCount] = {};
+    Label* labels = assembler->labels;
+    FixUp* fixUps = assembler->fixUps;
     
     for (size_t st = 0; st < stringsCount; st++)
     {
@@ -138,7 +167,7 @@ static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile,
         char listingMsg[ListingMessageLength] = {};
         char listingBin[ListingBinCodeLength] = {};
 
-        if (cmdType == CMD_UNKNOWN)
+        if (cmdType == cmd_unknown)
         {
             string = buffer + strings[st].startIndex;
             if (!ParseLabel(&string, ip, labels, &labelsIndex))
@@ -146,310 +175,19 @@ static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile,
         }
         else
         {
+            if (cmdType == cmd_hlt)
+                hlt = true;           
+
             switch (cmdType)
             {
-                case CMD_PUSH:
-                {
-                    if (!ParseArgument(&string, cmdType, &ip, outputFile, listingMsg, listingBin))
-                        return false;
-                    break;
-                }
-                case CMD_POP:
-                {
-                    if (!ParseArgument(&string, cmdType, &ip, outputFile, listingMsg, listingBin))
-                        return false;
-                    break;
-                }
-                case CMD_IN:
-                {
-                    LogLine(logFile, "in");
-                    sprintf(listingMsg, "in");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_OUT:
-                {
-                    LogLine(logFile, "out");
-                    sprintf(listingMsg, "out");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_ADD:
-                {
-                    LogLine(logFile, "add");
-                    sprintf(listingMsg, "add");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_SUB:
-                {
-                    LogLine(logFile, "sub");
-                    sprintf(listingMsg, "sub");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_MUL:
-                {
-                    LogLine(logFile, "mul");
-                    sprintf(listingMsg, "mul");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_DIV:
-                {
-                    LogLine(logFile, "mul");
-                    sprintf(listingMsg, "div");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_HLT:
-                {
-                    LogLine(logFile, "hlt");
-                    sprintf(listingMsg, "hlt");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    hlt = true;
-                    break;
-                }
-                case CMD_DSP:
-                {
-                    LogLine(logFile, "dsp");
-                    sprintf(listingMsg, "dsp");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_JMP:
-                {
-                    LogLine(logFile, "jmp");
-                    sprintf(listingMsg, "jmp");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-
-                    if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpsIndex, outputFile))
-                    {
-                        printf("Ошибка чтения строки <%s>", string);
-                        return false;
-                    }
-                    size_t ip_null = 0;
-                    fwrite(&ip_null, sizeof(size_t), 1, outputFile);
-                    ip += sizeof(size_t);
-                    break;
-                }
-                case CMD_JA:
-                {
-                    LogLine(logFile, "ja");
-                    sprintf(listingMsg, "ja");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-
-                    if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpsIndex, outputFile))
-                    {
-                        printf("Ошибка чтения строки <%s>", string);
-                        return false;
-                    }
-                    size_t ip_null = 0;
-                    fwrite(&ip_null, sizeof(size_t), 1, outputFile);
-                    ip += sizeof(size_t);
-                    break;
-                }
-                case CMD_JAE:
-                {
-                    LogLine(logFile, "jae");
-                    sprintf(listingMsg, "jae");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-
-                    if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpsIndex, outputFile))
-                    {
-                        printf("Ошибка чтения строки <%s>", string);
-                        return false;
-                    }
-                    size_t ip_null = 0;
-                    fwrite(&ip_null, sizeof(size_t), 1, outputFile);
-                    ip += sizeof(size_t);
-                    break;
-                }
-                case CMD_JB:
-                {
-                    LogLine(logFile, "jb");
-                    sprintf(listingMsg, "jb");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-
-                    if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpsIndex, outputFile))
-                    {
-                        printf("Ошибка чтения строки <%s>", string);
-                        return false;
-                    }
-                    size_t ip_null = 0;
-                    fwrite(&ip_null, sizeof(size_t), 1, outputFile);
-                    ip += sizeof(size_t);
-                    break;
-                }
-                case CMD_JBE:
-                {
-                    LogLine(logFile, "jbe");
-                    sprintf(listingMsg, "jbe");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-
-                    if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpsIndex, outputFile))
-                    {
-                        printf("Ошибка чтения строки <%s>", string);
-                        return false;
-                    }
-                    size_t ip_null = 0;
-                    fwrite(&ip_null, sizeof(size_t), 1, outputFile);
-                    ip += sizeof(size_t);
-                    break;
-                }
-                case CMD_JE:
-                {
-                    LogLine(logFile, "je");
-                    sprintf(listingMsg, "je");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-
-                    if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpsIndex, outputFile))
-                    {
-                        printf("Ошибка чтения строки <%s>", string);
-                        return false;
-                    }
-                    size_t ip_null = 0;
-                    fwrite(&ip_null, sizeof(size_t), 1, outputFile);
-                    ip += sizeof(size_t);
-                    break;
-                }
-                case CMD_JNE:
-                {
-                    LogLine(logFile, "jne");
-                    sprintf(listingMsg, "jne");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-
-                    if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpsIndex, outputFile))
-                    {
-                        printf("Ошибка чтения строки <%s>", string);
-                        return false;
-                    }
-                    size_t ip_null = 0;
-                    fwrite(&ip_null, sizeof(size_t), 1, outputFile);
-                    ip += sizeof(size_t);
-                    break;
-                }
-                case CMD_CALL:
-                {
-                    LogLine(logFile, "call");
-                    sprintf(listingMsg, "call");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-
-                    if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpsIndex, outputFile))
-                    {
-                        printf("Ошибка чтения строки <%s>", string);
-                        return false;
-                    }
-                    size_t ip_null = 0;
-                    fwrite(&ip_null, sizeof(size_t), 1, outputFile);
-                    ip += sizeof(size_t);
-                    break;
-                }
-                case CMD_RET:
-                {
-                    LogLine(logFile, "ret");
-                    sprintf(listingMsg, "ret");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_COS:
-                {
-                    LogLine(logFile, "cos");
-                    sprintf(listingMsg, "cos");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_SIN:
-                {
-                    LogLine(logFile, "sin");
-                    sprintf(listingMsg, "sin");
-                    sprintf(listingBin, "%02x ", cmd);
-
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_SQRT:
-                {
-                    LogLine(logFile, "sqrt");
-                    sprintf(listingMsg, "sqrt");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
-                case CMD_INT:
-                {
-                    LogLine(logFile, "int");
-                    sprintf(listingMsg, "int");
-                    sprintf(listingBin, "%02x ", cmd);
-                    
-                    fwrite(&cmd, commandSize, 1, outputFile);
-                    ip += commandSize;
-                    break;
-                }
+#include "..\Libraries\CommandsDef.h"
                 default:
                     LogLine(logFile, "Неизвестная команда");
                     printf("Неизвестная команда <%s>\n", buffer + strings[st].startIndex);
                     return false;
             }
             
-            ListingAddLine(listingFile, oldInstructionPointer, listingMsg, listingBin);
+            ListingAddLine(assembler->listingFile, oldInstructionPointer, listingMsg, listingBin);
         }
 
         commandsCount++;
@@ -460,32 +198,12 @@ static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile,
         }
     }
 
+    assembler->header.CommandsCount = commandsCount;
+    assembler->header.BodySize = ip;
+    assembler->fixUpIndex = fixUpIndex;
+
     if (hlt)
     {
-        fseek(outputFile, 0, SEEK_SET);
-        header.CommandsCount = commandsCount;
-        header.BodySize = ip;
-        fwrite(&header, sizeof(FileHeader), 1, outputFile);
-
-        for (int st = 0; st < fixUpsIndex; st++)
-        {
-            Label label = labels[fixUps[st].LabelIndex];
-
-            if (label.inited)
-            {
-                fseek(outputFile, fixUps[st].fileIndex, SEEK_SET);
-                fwrite(&label.ip, sizeof(size_t), 1, outputFile);
-            }
-            else
-            {
-                printf("Метка <%s> не проинициализирована", label.msg);
-                return false;
-            }
-        }
-
-        fseek(listingFile, 0, SEEK_SET);
-        CreateListingFileHeader(listingFile, &header, outputFileName);
-        fseek(listingFile, 0, SEEK_END);
         return true;
     }
     else
@@ -493,6 +211,40 @@ static bool ParseText(Assembler* assembler, FILE* outputFile, FILE* listingFile,
         puts("Не обнаружена комманда hlt в конце программы");
         return false;
     }
+}
+
+static bool GenerateEnding(Assembler* assembler)
+{
+    FILE* outputFile = assembler->outputFile;
+
+    fseek(outputFile, 0, SEEK_SET);
+    fwrite(&assembler->header, sizeof(FileHeader), 1, assembler->outputFile);
+
+    Label* labels = assembler->labels;
+    FixUp* fixUps = assembler->fixUps;
+    size_t fixUpIndex = assembler->fixUpIndex;
+
+    for (size_t st = 0; st < fixUpIndex; st++)
+    {
+        Label label = labels[fixUps[st].LabelIndex];
+
+        if (label.inited)
+        {
+            fseek(outputFile, fixUps[st].fileIndex, SEEK_SET);
+            fwrite(&label.ip, sizeof(size_t), 1, outputFile);
+        }
+        else
+        {
+            printf("Метка <%s> не проинициализирована", label.msg);
+            return false;
+        }
+    }
+
+    fseek(assembler->listingFile, 0, SEEK_SET);
+    CreateListingFileHeader(assembler->listingFile, &assembler->header, outputFileName);
+    fseek(assembler->listingFile, 0, SEEK_END);
+
+    return true;
 }
 
 static AssemblerCommand GetNextCommand(char** buffer)
@@ -797,7 +549,7 @@ static bool ParseLabel(char** buffer, size_t ip, Label* labels, size_t* labelInd
 
         return true;
     }
-    printf("Строка <%s> меткой не является", buffer);
+    printf("Строка <%s> меткой не является", *buffer);
     return false;
 }
 
@@ -848,7 +600,7 @@ static bool ParseJmpCommand(char** buffer, Label* labels, size_t* labelIndex, Fi
 
         return true;
     }
-    printf("Строка <%s> меткой не является", buffer);
+    printf("Строка <%s> меткой не является", *buffer);
     return false;
 }
 
