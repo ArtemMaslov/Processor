@@ -17,12 +17,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandsDef.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandsEnum.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DSL.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FilesFormat.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Logs\Logs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\Stack.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\StackDiagnostic.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StackLibrary\StackProtection.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StringLibrary\StringLibrary.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)UndefDSL.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)FilesFormat.cpp" />

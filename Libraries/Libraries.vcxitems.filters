@@ -49,5 +49,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FilesFormat.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandsDef.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DSL.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)UndefDSL.h" />
   </ItemGroup>
 </Project>

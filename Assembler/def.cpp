@@ -1,18 +1,8 @@
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-
-#include "..\Libraries\StringLibrary\StringLibrary.h"
-#include "..\Libraries\Logs\Logs.h"
-#include "Assembler.h"
-#include "..\Libraries\CommandsEnum.h"
-#include "..\Libraries\FilesFormat.h"
-#include "ListingCreator.h"
-
-
+# 0 "Assembler.cpp"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "Assembler.cpp"
+# 16 "Assembler.cpp"
 static FILE* logFile;
 char* listingFileName = nullptr;
 char* asmLogsFileName = nullptr;
@@ -20,6 +10,10 @@ char* outputFileName = nullptr;
 
 
 static AssemblerCommand GetNextCommand(char** buffer);
+
+static bool GetNextDoubleArgument(char** buffer, double* number);
+
+static bool GetNextIntArgument(char** buffer, int* number);
 
 static bool GenerateCode(Assembler* assembler);
 
@@ -64,12 +58,12 @@ void AssemblerConstructor(FILE* inputFile, FILE* outputFile, FILE* listingFile, 
     bool res = ReadFile(&assembler.text, &header, inputFile);
 
     logFile = asmLogFile;
-    
+
     if (res)
     {
         LogLine(logFile, "Файл успешно прочитан");
         ParseFileToLines(&assembler.text);
-                    
+
         CreateListingFileHeader(listingFile, nullptr, outputFileName);
 
         assembler.labels = (Label*)calloc(LabelsCount, sizeof(Label));
@@ -95,20 +89,7 @@ static bool GenerateHeader(Assembler* assembler)
 
     return true;
 }
-
-#define CMD_DEF(number, name, argc, procCode, asmGen, ...)                                              \
-    case cmd_##name:                                                                                    \
-    {                                                                                                   \
-        LogLine(logFile, #name);                                                                        \
-        sprintf(listingMsg, #name);                                                                     \
-        sprintf(listingBin, "%02x ", cmd.cmd_byte);                                                     \
-        size_t ip_null = 0;                                                                             \
-                                                                                                        \
-        asmGen                                                                                          \
-                                                                                                        \
-        break;                                                                                          \
-    }
-
+# 115 "Assembler.cpp"
 static bool GenerateCode(Assembler* assembler)
 {
     assert(assembler);
@@ -117,33 +98,33 @@ static bool GenerateCode(Assembler* assembler)
 
     FILE* outputFile = assembler->outputFile;
 
-    char*   buffer       = assembler->text.buffer;
-    String* strings      = assembler->text.strings;
-    size_t  bufferSize   = assembler->text.bufferSize;
-    size_t  stringsCount = assembler->text.stringsCount;
+    char* buffer = assembler->text.buffer;
+    String* strings = assembler->text.strings;
+    size_t bufferSize = assembler->text.bufferSize;
+    size_t stringsCount = assembler->text.stringsCount;
 
-    bool    hlt = false;
-    size_t  ip  = 0;
-    size_t  commandsCount = 0;
-    size_t  labelsIndex   = 0;
-    size_t  fixUpIndex   = 0;
+    bool hlt = false;
+    size_t ip = 0;
+    size_t commandsCount = 0;
+    size_t labelsIndex = 0;
+    size_t fixUpIndex = 0;
 
     Label* labels = assembler->labels;
     FixUp* fixUps = assembler->fixUps;
-    
+
     for (size_t st = 0; st < stringsCount; st++)
     {
         char* string = buffer + strings[st].startIndex;
-        
+
         if (IgnoreComment(&string))
             continue;
-        
+
         AssemblerCommand cmdType = GetNextCommand(&string);
         Command cmd = {};
         cmd.type = cmdType;
-            
+
         size_t oldInstructionPointer = ip;
-        
+
         char listingMsg[ListingMessageLength] = {};
         char listingBin[ListingBinCodeLength] = {};
 
@@ -156,17 +137,151 @@ static bool GenerateCode(Assembler* assembler)
         else
         {
             if (cmdType == cmd_hlt)
-                hlt = true;           
+                hlt = true;
 
             switch (cmdType)
             {
-#include "..\Libraries\CommandsDef.h"
+# 1 "..\\Libraries\\CommandsDef.h" 1
+# 1 "..\\Libraries\\DSL.h" 1
+# 2 "..\\Libraries\\CommandsDef.h" 2
+
+
+
+
+
+case cmd_unknown: { LogLine(logFile, "unknown"); sprintf(listingMsg, "unknown"); sprintf(listingBin, "%02x ", cmd.cmd_byte);
+size_t ip_null = 0; ; break; }
+
+
+
+
+
+case cmd_push: { 
+    LogLine(logFile, "push"); 
+    sprintf(listingMsg, "push"); 
+    sprintf(listingBin, "%02x ", cmd.cmd_byte); 
+    size_t ip_null = 0; 
+    { if (!ParseArgument(&string, cmdType, &ip, outputFile, listingMsg, listingBin)) return false; } break; }
+# 41 "..\\Libraries\\CommandsDef.h"
+case cmd_pop: { LogLine(logFile, "pop"); sprintf(listingMsg, "pop"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { if (!ParseArgument(&string, cmdType, &ip, outputFile, listingMsg, listingBin)) return false; } break; }
+# 94 "..\\Libraries\\CommandsDef.h"
+case cmd_in: { LogLine(logFile, "in"); sprintf(listingMsg, "in"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+# 110 "..\\Libraries\\CommandsDef.h"
+case cmd_out: { LogLine(logFile, "out"); sprintf(listingMsg, "out"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+# 119 "..\\Libraries\\CommandsDef.h"
+case cmd_add: { LogLine(logFile, "add"); sprintf(listingMsg, "add"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_sub: { LogLine(logFile, "sub"); sprintf(listingMsg, "sub"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_mul: { LogLine(logFile, "mul"); sprintf(listingMsg, "mul"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_div: { LogLine(logFile, "div"); sprintf(listingMsg, "div"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_hlt: { LogLine(logFile, "hlt"); sprintf(listingMsg, "hlt"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_jmp: { LogLine(logFile, "jmp"); sprintf(listingMsg, "jmp"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile)) { printf("Ошибка чтения строки <%s>", string); return false; } fwrite(&ip_null, sizeof(size_t), 1, outputFile); ip += sizeof(size_t); } break; }
+
+
+
+
+
+case cmd_ja: { LogLine(logFile, "ja"); sprintf(listingMsg, "ja"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile)) { printf("Ошибка чтения строки <%s>", string); return false; } fwrite(&ip_null, sizeof(size_t), 1, outputFile); ip += sizeof(size_t); } break; }
+
+
+
+
+
+case cmd_jae: { LogLine(logFile, "jae"); sprintf(listingMsg, "jae"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile)) { printf("Ошибка чтения строки <%s>", string); return false; } fwrite(&ip_null, sizeof(size_t), 1, outputFile); ip += sizeof(size_t); } break; }
+
+
+
+
+
+case cmd_jb: { LogLine(logFile, "jb"); sprintf(listingMsg, "jb"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile)) { printf("Ошибка чтения строки <%s>", string); return false; } fwrite(&ip_null, sizeof(size_t), 1, outputFile); ip += sizeof(size_t); } break; }
+
+
+
+
+
+case cmd_jbe: { LogLine(logFile, "jbe"); sprintf(listingMsg, "jbe"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile)) { printf("Ошибка чтения строки <%s>", string); return false; } fwrite(&ip_null, sizeof(size_t), 1, outputFile); ip += sizeof(size_t); } break; }
+
+
+
+
+
+case cmd_je: { LogLine(logFile, "je"); sprintf(listingMsg, "je"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile)) { printf("Ошибка чтения строки <%s>", string); return false; } fwrite(&ip_null, sizeof(size_t), 1, outputFile); ip += sizeof(size_t); } break; }
+
+
+
+
+
+case cmd_jne: { LogLine(logFile, "jne"); sprintf(listingMsg, "jne"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile)) { printf("Ошибка чтения строки <%s>", string); return false; } fwrite(&ip_null, sizeof(size_t), 1, outputFile); ip += sizeof(size_t); } break; }
+
+
+
+
+
+case cmd_call: { LogLine(logFile, "call"); sprintf(listingMsg, "call"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; if (!ParseJmpCommand(&string, labels, &labelsIndex, fixUps, &fixUpIndex, outputFile)) { printf("Ошибка чтения строки <%s>", string); return false; } fwrite(&ip_null, sizeof(size_t), 1, outputFile); ip += sizeof(size_t); } break; }
+# 200 "..\\Libraries\\CommandsDef.h"
+case cmd_ret: { LogLine(logFile, "ret"); sprintf(listingMsg, "ret"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+# 210 "..\\Libraries\\CommandsDef.h"
+case cmd_dsp: { LogLine(logFile, "dsp"); sprintf(listingMsg, "dsp"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+# 234 "..\\Libraries\\CommandsDef.h"
+case cmd_cos: { LogLine(logFile, "cos"); sprintf(listingMsg, "cos"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_sin: { LogLine(logFile, "sin"); sprintf(listingMsg, "sin"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_sqrt: { LogLine(logFile, "sqrt"); sprintf(listingMsg, "sqrt"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_int: { LogLine(logFile, "int"); sprintf(listingMsg, "int"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { fwrite(&cmd, commandSize, 1, outputFile); ip += commandSize; } break; }
+
+
+
+
+
+case cmd_meow: { LogLine(logFile, "meow"); sprintf(listingMsg, "meow"); sprintf(listingBin, "%02x ", cmd.cmd_byte); size_t ip_null = 0; { if (!ParseArgument(&string, cmdType, &ip, outputFile, listingMsg, listingBin)) return false; } break; }
+# 270 "..\\Libraries\\CommandsDef.h"
+# 1 "..\\Libraries\\UndefDSL.h" 1
+# 271 "..\\Libraries\\CommandsDef.h" 2
+# 167 "Assembler.cpp" 2
                 default:
                     LogLine(logFile, "Неизвестная команда");
                     printf("Неизвестная команда <%s>\n", buffer + strings[st].startIndex);
                     return false;
             }
-            
+
             ListingAddLine(assembler->listingFile, oldInstructionPointer, listingMsg, listingBin);
         }
 
@@ -231,7 +346,7 @@ static AssemblerCommand GetNextCommand(char** buffer)
 {
     assert(buffer);
     assert(*buffer);
-    
+
     LogLine(logFile, "GetNextCommand");
 
     while (**buffer)
@@ -260,20 +375,40 @@ static AssemblerCommand GetNextCommand(char** buffer)
     return cmd_unknown;
 }
 
+static bool GetNextDoubleArgument(char** buffer, double* number)
+{
+    assert(buffer);
+    assert(*buffer);
+    assert(number);
+
+    LogLine(logFile, "GetNextDoubleArgument");
+
+    int stringOffset = 0;
+    int readed = sscanf(*buffer, " %lf%n", number, &stringOffset);
+
+    if (readed == 1)
+    {
+        (*buffer) += stringOffset;
+        return true;
+    }
+    else
+        return false;
+}
+
 static bool GetNextArgument(char** buffer, const char* format, void* out_number)
 {
     assert(buffer);
     assert(*buffer);
     assert(format);
     assert(out_number);
-    
+
     LogLine(logFile, "GetNextDoubleArgument");
 
     int stringOffset = 0;
 
     size_t formatLength = strlen(format) + 1 + 3;
     char* strFormat = (char*)calloc(formatLength, sizeof(char));
-    if (!strFormat)
+    if (!format)
     {
         puts("Не хватает памяти");
         return false;
@@ -293,11 +428,31 @@ static bool GetNextArgument(char** buffer, const char* format, void* out_number)
         return false;
 }
 
+static bool GetNextIntArgument(char** buffer, int* number)
+{
+    assert(buffer);
+    assert(*buffer);
+    assert(number);
+
+    LogLine(logFile, "GetNextIntArgument");
+
+    int stringOffset = 0;
+    int readed = sscanf(*buffer, " %d%n", number, &stringOffset);
+
+    if (readed == 1)
+    {
+        (*buffer) += stringOffset;
+        return true;
+    }
+    else
+        return false;
+}
+
 static bool IgnoreComment(char** buffer)
 {
     assert(buffer);
     assert(*buffer);
-    
+
     LogLine(logFile, "IgnoreComment");
 
     bool res = true;
@@ -321,7 +476,7 @@ static bool GetNextRegister(char** buffer, int* regIndex)
     assert(buffer);
     assert(*buffer);
     assert(regIndex);
-    
+
     LogLine(logFile, "GetNextRegister");
 
     char* buf = *buffer;
@@ -360,11 +515,11 @@ static bool GetNextRegister(char** buffer, int* regIndex)
 static bool ParseArgument(char** buffer, AssemblerCommand cmdType, size_t* instructionPointer, FILE* outputFile, char* msg, char* bin)
 {
     double doubleVal = 0;
-    int    regIndex  = 0;
-    bool   number    = false;
-    bool   reg       = false;
-    int    RAM       = 0;
-    char*  bufPtr    = *buffer;
+    int regIndex = 0;
+    bool number = false;
+    bool reg = false;
+    int RAM = 0;
+    char* bufPtr = *buffer;
 
     while (**buffer)
     {
@@ -387,7 +542,7 @@ static bool ParseArgument(char** buffer, AssemblerCommand cmdType, size_t* instr
                 return false;
             }
         }
-        else if (GetNextArgument(buffer, "%lf", &doubleVal))
+        else if (GetNextDoubleArgument(buffer, &doubleVal))
         {
             if (!number)
                 number = true;
@@ -484,10 +639,10 @@ static bool ParseLabel(char** buffer, size_t ip, Label* labels, size_t* labelInd
 
     assert(*labelIndex < LabelsCount);
 
-    char*  start       = nullptr;
-    size_t length      = 0;
-    size_t _li         = *labelIndex;
-    bool   IsLabelInit = false;
+    char* start = nullptr;
+    size_t length = 0;
+    size_t _li = *labelIndex;
+    bool IsLabelInit = false;
 
     if (GetLabelArg(buffer, &start, &length, &IsLabelInit) && IsLabelInit)
     {
@@ -514,7 +669,7 @@ static bool ParseLabel(char** buffer, size_t ip, Label* labels, size_t* labelInd
                 }
             }
         }
-        
+
         strncpy(labels[_li].msg, start, length);
         labels[_li].inited = true;
         labels[_li].ip = ip;
@@ -539,10 +694,10 @@ static bool ParseJmpCommand(char** buffer, Label* labels, size_t* labelIndex, Fi
     assert(*labelIndex < LabelsCount);
     assert(*fixUpIndex < FixUpsCount);
 
-    char*  start       = nullptr;
-    size_t length      = 0;
-    size_t _li         = *labelIndex;
-    size_t _fi         = *fixUpIndex;
+    char* start = nullptr;
+    size_t length = 0;
+    size_t _li = *labelIndex;
+    size_t _fi = *fixUpIndex;
 
     if (GetLabelArg(buffer, &start, &length, nullptr))
     {
@@ -557,7 +712,7 @@ static bool ParseJmpCommand(char** buffer, Label* labels, size_t* labelIndex, Fi
             if (strcmp(start, labels[st].msg) == 0)
             {
                 fixUps[_fi].LabelIndex = st;
-                fixUps[_fi].fileIndex  = ftell(outputFile);
+                fixUps[_fi].fileIndex = ftell(outputFile);
                 (*fixUpIndex)++;
                 return true;
             }
@@ -568,7 +723,7 @@ static bool ParseJmpCommand(char** buffer, Label* labels, size_t* labelIndex, Fi
         (*labelIndex)++;
 
         fixUps[_fi].LabelIndex = _li;
-        fixUps[_fi].fileIndex  = ftell(outputFile);
+        fixUps[_fi].fileIndex = ftell(outputFile);
         (*fixUpIndex)++;
 
         return true;
@@ -582,12 +737,12 @@ static bool GetLabelArg(char** buffer, char** start, size_t* length, bool* IsLab
     assert(buffer);
     assert(*buffer);
     assert(start);
-    // assert(*start);
+
     assert(length);
-    // assert(IsLabelInit);
+
 
     bool stringInited = false;
-    size_t strLength  = 0;
+    size_t strLength = 0;
 
     while (**buffer)
     {
@@ -607,7 +762,7 @@ static bool GetLabelArg(char** buffer, char** start, size_t* length, bool* IsLab
                 strLength++;
         (*buffer)++;
     }
-    
+
     if (stringInited)
     {
         *length = strLength;

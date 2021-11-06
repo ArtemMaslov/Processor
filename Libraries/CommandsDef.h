@@ -1,104 +1,14 @@
-/// ƒобавить элемент в конец стека. ptr - это адрес double числа
-#define PUSH(ptr) StackPush(stk, (ptr))
-
-#define GET_REG_INDEX(ptr)                                  \
-    GetRegIndex(code, &ip, (ptr));                          \
-    if (*(ptr) >= regsCount)                                \
-    {                                                       \
-        printf("IndexOutOfRangeRegister = %d", *(ptr));     \
-        return false;                                       \
-    }
-
-#define GET_DOUBLE_ARG(ptr) GetDoubleArg(code, &ip, (ptr))
-
-#define GET_SIZE_T_ARG(ptr) GetSize_TArg(code, &ip, (ptr))
-
-#define GET_REG_VALUE(ptr) cpu->regs[ptr]
-
-#define IF_REG(code)                                        \
-    if (cmd.Reg)                                            \
-    {    code     }
-
-#define IF_NUMBER(code)                                     \
-    if (cmd.Number)                                         \
-    {    code     }
-
-#define IF_RAM(code)                                        \
-    if (cmd.RAM)                                            \
-    {    code     }
-
-#define ELSE(code)                                          \
-    else                                                    \
-    {    code     }
-
-#define RAM_DELAY Sleep(RamSleep)
-
-#define POP(err_ptr) StackPop(stk, (err_ptr))
-
-#define GET_DOUBLE(ptr) *((double*)(ptr));
-
-#define STACK_DUMP(err)                                     \
-    if ((err) > 0)                                          \
-        StackDump(stk, stdout);
-
-#define _RAM cpu->RAM
-
-#define _REGS cpu->regs
-
-#define JMP_TO(instruction) ip = (int)(instruction)
-
-#define JMP                                                 \
-    {                                                       \
-        size_t jmpLabel = 0;                                \
-        GET_SIZE_T_ARG(&jmpLabel);                          \
-        JMP_TO(jmpLabel);                                   \
-    }
-
-#define CALCULATE(action)                                   \
-    {                                                       \
-        int error = 0;                                      \
-        double number1 = GET_DOUBLE(POP(&error));           \
-        STACK_DUMP(error);                                  \
-                                                            \
-        double number2 =  GET_DOUBLE(POP(&error));          \
-        STACK_DUMP(error);                                  \
-                                                            \
-        number2 action= number1;                            \
-        PUSH(&number2);                                     \
-        STACK_DUMP(error);                                  \
-    }
-
-#define UNARY_OPERATION(operation)                          \
-    {                                                       \
-        int error = 0;                                      \
-        double number = GET_DOUBLE(POP(&error));            \
-        STACK_DUMP(error);                                  \
-                                                            \
-        number = operation;                                 \
-        PUSH(&number);                                      \
-    }
-
-#define JMP_ACTION(action)                                  \
-    {                                                       \
-        int error = 0;                                      \
-        double number1 = GET_DOUBLE(POP(&error));           \
-        STACK_DUMP(error);                                  \
-                                                            \
-        double number2 =  GET_DOUBLE(POP(&error));          \
-        STACK_DUMP(error);                                  \
-                                                            \
-        if (number2 action number1)                         \
-            JMP;                                            \
-    }
+#include "DSL.h"
 
 ///***-***\\\--///***-***\\\--///***-***\\\
 ///***-***\\\--///***-***\\\--///***-***\\\
 ///***-***\\\--///***-***\\\--///***-***\\\
 
-CMD_DEF(0, unknown, 0, 
-    { 
-        assert("Command is nullptr" == nullptr); 
-    })
+//CMD_DEF(0, unknown, 0, 
+//    { 
+//        assert("Command is nullptr" == nullptr); 
+//    },
+//    ;)
 
 CMD_DEF(1, push, -1, 
     {
@@ -125,7 +35,8 @@ CMD_DEF(1, push, -1,
     (
         PUSH(&number);
     )
-    })
+    },
+    GenerateArgsCommand)
 
 CMD_DEF(2, pop, -1, 
     {
@@ -147,7 +58,7 @@ CMD_DEF(2, pop, -1,
                     GET_DOUBLE_ARG(&number);
                 )
 
-                int ramIndex = number1 + _REGS[regIndex];
+                int ramIndex = (int)number1 + (int)(_REGS[regIndex]);
                 if (ramIndex < DispOffset) // ќперативна€ пам€ть
                 {
                     _RAM[ramIndex] = GET_DOUBLE(POP(&error));
@@ -177,7 +88,8 @@ CMD_DEF(2, pop, -1,
             )
         }
         STACK_DUMP(error);
-    })
+    },
+    GenerateArgsCommand)
 
 CMD_DEF(3, in, 0, 
     {
@@ -192,75 +104,91 @@ CMD_DEF(3, in, 0,
             printf("ѕрограмма завершена\n");
             return false;
         }
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(4, out, 0,
     {
         int error = 0;
-        double number = GET_DOUBLE(POP(&error));
-        printf("%lf\n", number);
-        STACK_DUMP(error);
-    })
+        double* number = (double*)POP(&error);
+        if (number)
+            printf("%lf\n", GET_DOUBLE(number));
+        else
+            puts("");
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(5, add, 0, 
     {
         CALCULATE(+)
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(6, sub, 0, 
     {
         CALCULATE(-)
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(7, mul, 0, 
     {
         CALCULATE(*)
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(8, div, 0, 
     {
         CALCULATE(/)
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(9, hlt, 0,
     {
         return true;
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(10, jmp, -2, 
     {
         JMP;
-    })
+    },
+    GenerateJumpCommand)
 
 CMD_DEF(11, ja, -2, 
     {
         JMP_ACTION(>)
-    })
+    },
+    GenerateJumpCommand)
 
 CMD_DEF(12, jae, -2, 
     {
         JMP_ACTION(>=)
-    })
+    },
+    GenerateJumpCommand)
 
 CMD_DEF(13, jb, -2, 
     {
         JMP_ACTION(<)
-    })
+    },
+    GenerateJumpCommand)
 
 CMD_DEF(14, jbe, -2, 
     {
         JMP_ACTION(<=)
-    })
+    },
+    GenerateJumpCommand)
 
 CMD_DEF(15, je, -2, 
     {
         JMP_ACTION(==)
-    })
+    },
+    GenerateJumpCommand)
 
 CMD_DEF(16, jne, -2, 
     {
         JMP_ACTION(!=)
-    })
+    },
+    GenerateJumpCommand)
 
 CMD_DEF(17, call, -2, 
     {
@@ -268,7 +196,8 @@ CMD_DEF(17, call, -2,
         PUSH(&retLabel);
         
         JMP;
-    })
+    },
+    GenerateJumpCommand)
 
 CMD_DEF(18, ret, 0, 
     {
@@ -277,7 +206,8 @@ CMD_DEF(18, ret, 0,
         STACK_DUMP(error)
 
         JMP_TO(retLabel);
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(19, dsp, 0, 
     {
@@ -300,27 +230,32 @@ CMD_DEF(19, dsp, 0,
             }
         }
         fflush(stdout);
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(20, cos, 0, 
     {
         UNARY_OPERATION(cos(number * PI / 180))
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(21, sin, 0, 
     {
         UNARY_OPERATION(sin(number * PI / 180))
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(22, sqrt, 0, 
     {
         UNARY_OPERATION(sqrt(number))
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(23, int, 0, 
     {
         UNARY_OPERATION((int)(number))
-    })
+    },
+    GenerateDefaultCommand)
 
 CMD_DEF(24, meow, -1, 
     {
@@ -329,27 +264,9 @@ CMD_DEF(24, meow, -1,
 
         for (int st = 0; st < (int)number; st++)
             puts("ћ€€€ууу!");
-    })
+    },
+    GenerateArgsCommand)
 
 #undef CMD_DEF
         
-#undef PUSH
-#undef GET_REG_INDEX
-#undef GET_DOUBLE_ARG
-#undef GET_SIZE_T_ARG
-#undef GET_REG_VALUE
-#undef IF_REG
-#undef IF_NUMBER
-#undef IF_RAM
-#undef ELSE
-#undef RAM_DELAY
-#undef POP
-#undef GET_DOUBLE
-#undef STACK_DUMP
-#undef _RAM
-#undef _REGS
-#undef JMP_TO
-#undef JMP
-#undef CALCULATE
-#undef UNARY_OPERATION
-#undef JMP_ACTION
+#include "UndefDSL.h"

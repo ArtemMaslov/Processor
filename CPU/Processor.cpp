@@ -10,19 +10,14 @@
 #include "..\Libraries\StringLibrary\StringLibrary.h"
 #include "..\Libraries\CommandsEnum.h"
 #include "..\Libraries\FilesFormat.h"
-
-
 #include <Windows.h>
+
 
 #define PI 3.14159265
 
-static void GetDoubleArg(char* code, size_t* ip, double* number);
-
-static void GetRegIndex(char* code, size_t* ip, size_t* regIndex);
-
 static bool ParseText(ProcessorStructure* cpu);
 
-static void GetSize_TArg(char* code, size_t* ip, size_t* number);
+static void GetArg(char* code, size_t* ip, size_t res_size, void* out_res);
 
 
 void ProcessorConstructor(FILE* inputFile, FILE* stackLogFile, FILE* cpuLogFile)
@@ -69,11 +64,11 @@ void ProcessorConstructor(FILE* inputFile, FILE* stackLogFile, FILE* cpuLogFile)
     }
 }
 
-#define CMD_DEF(number, name, argc, code)   \
-    case cmd_##name:                        \
-    {                                       \
-        code                                \
-        break;                              \
+#define CMD_DEF(number, name, argc, code, ...)      \
+    case cmd_##name:                                \
+    {                                               \
+        code                                        \
+        break;                                      \
     }
 
 static bool ParseText(ProcessorStructure* cpu)
@@ -103,7 +98,7 @@ static bool ParseText(ProcessorStructure* cpu)
         {
 #include "..\Libraries\CommandsDef.h"
             default:
-                printf("Неизвестная команда: <%c>; ip = %zd", code[ip], ip);
+                printf("Неизвестная команда <%c>. ip = %zd", code[ip], ip);
                 return false;
         }
         commandCounter++;
@@ -112,32 +107,12 @@ static bool ParseText(ProcessorStructure* cpu)
     return true;
 }
 
-static void GetDoubleArg(char* code, size_t* ip, double* number)
+static void GetArg(char* code, size_t* ip, size_t res_size, void* out_res)
 {
     assert(code);
-    assert(number);
+    assert(out_res);
     assert(ip);
 
-    memmove(number, code + *ip, sizeof(double));
-    *ip += sizeof(double);
-}
-
-static void GetSize_TArg(char* code, size_t* ip, size_t* number)
-{
-    assert(code);
-    assert(number);
-    assert(ip);
-
-    memmove(number, code + *ip, sizeof(size_t));
-    *ip += sizeof(size_t);
-}
-
-static void GetRegIndex(char* code, size_t* ip, size_t* regIndex)
-{
-    assert(code);
-    assert(ip);
-    assert(regIndex);
-
-    memmove(regIndex, code + *ip, sizeof(char));
-    *ip += sizeof(char);
+    memmove(out_res, code + *ip, res_size);
+    *ip += res_size;
 }

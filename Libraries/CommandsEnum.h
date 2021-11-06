@@ -22,40 +22,20 @@ union Command
     unsigned char cmd_byte;
 };
 
-#define CMD_DEF(number, name, argc, code) cmd_##name = number,
+#define CMD_DEF(number, name, argc, code, ...) cmd_##name = number,
 
 enum AssemblerCommand
 {
+    cmd_unknown = 0,
 #include "CommandsDef.h"
 };
 
-const char CommandsName[][5] = 
+#define CMD_DEF(number, name, argc, code, ...) #name,
+
+const char CommandsName[][8] = 
 {
     "",
-    "push",
-    "pop",
-    "in",
-    "out",
-    "add",
-    "sub",
-    "mul",
-    "div",
-    "hlt",
-    "jmp",
-    "ja",
-    "jae",
-    "jb",
-    "jbe",
-    "je",
-    "jne",
-    "call",
-    "ret",
-    "dsp",
-    "cos",
-    "sin",
-    "sqrt",
-    "int",
-    "meow"
+#include "CommandsDef.h"
 };
 
 const char regNames[][3] = 

@@ -9,6 +9,7 @@ int main(int argc, char* argv[])
 {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
+
     puts("ѕроцессор:");
 
     FILE* inputFile     = nullptr;
@@ -29,7 +30,7 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
     else
     {
-        const char* dgbInput     = "D:\\язык C\\Processor\\tests\\asm_src\\asm_jmp2_out.code";
+        const char* dgbInput     = "D:\\язык C\\Processor\\tests\\asm_src\\task_queq_out.code";
         const char* dgbCpuLogs   = "D:\\язык C\\Processor\\tests\\cpu_logs.html";
         const char* dbgStackLogs = "D:\\язык C\\Processor\\tests\\stack_logs.html";
 
