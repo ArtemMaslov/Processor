@@ -154,12 +154,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Update="D:\Язык C\Processor\Libraries\CommandsDef.h">
-      <FileType>Document</FileType>
+      <FileType>CppHeader</FileType>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Update="D:\Язык C\Processor\Libraries\CommandsDef.h">
-      <FileType>Document</FileType>
+      <FileType>CppHeader</FileType>
     </Text>
     <Text Update="D:\Язык C\Processor\Libraries\CommandsDef.inc">
       <FileType>Document</FileType>

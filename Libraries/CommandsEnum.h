@@ -19,7 +19,7 @@ union Command
         unsigned int type   :5;
     };
 
-    unsigned char cmb_byte;
+    unsigned char cmd_byte;
 };
 
 #define CMD_DEF(number, name, argc, code) cmd_##name = number,

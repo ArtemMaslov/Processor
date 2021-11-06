@@ -1,8 +1,8 @@
-//#include <stdio.h>
-//#include <assert.h>
-//#include <string.h>
-//#include <stdlib.h>
-//#include <ctype.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 
 #include "..\Libraries\StringLibrary\StringLibrary.h"
@@ -58,6 +58,8 @@ void AssemblerConstructor(FILE* inputFile, FILE* outputFile, FILE* listingFile, 
     Assembler assembler = {};
     assembler.text = {};
     assembler.bufferIndex = 0;
+    assembler.listingFile = listingFile;
+    assembler.outputFile = outputFile;
 
     FileHeader header = {};
     header.BodySize = GetFileSize(inputFile);
@@ -97,12 +99,13 @@ static bool GenerateHeader(Assembler* assembler)
 }
 
 #define CMD_DEF(number, name, argc, ...)                                                                \
-    LogLine(logFile, #name);                                                                            \
-    sprintf(listingMsg, #name);                                                                         \
-    sprintf(listingBin, "%02x ", cmd.cmd_byte);                                                         \
-                                                                                                        \
     case cmd_##name:                                                                                    \
     {                                                                                                   \
+        LogLine(logFile, #name);                                                                        \
+        sprintf(listingMsg, #name);                                                                     \
+        sprintf(listingBin, "%02x ", cmd.cmd_byte);                                                     \
+        size_t ip_null = 0;                                                                             \
+                                                                                                        \
         switch(argc)                                                                                    \
         {                                                                                               \
             case -1:                                                                                    \
@@ -118,7 +121,6 @@ static bool GenerateHeader(Assembler* assembler)
                     printf("Ошибка чтения строки <%s>", string);                                        \
                     return false;                                                                       \
                 }                                                                                       \
-                size_t ip_null = 0;                                                                     \
                 fwrite(&ip_null, sizeof(size_t), 1, outputFile);                                        \
                 ip += sizeof(size_t);                                                                   \
                 break;                                                                                  \
@@ -127,6 +129,7 @@ static bool GenerateHeader(Assembler* assembler)
                 ip += commandSize;                                                                      \
                 break;                                                                                  \
         }                                                                                               \
+        break;                                                                                          \
     }
 
 static bool ParseText(Assembler* assembler)
@@ -277,7 +280,7 @@ static AssemblerCommand GetNextCommand(char** buffer)
         }
         (*buffer)++;
     }
-    return CMD_UNKNOWN;
+    return cmd_unknown;
 }
 
 static bool GetNextDoubleArgument(char** buffer, double* number)

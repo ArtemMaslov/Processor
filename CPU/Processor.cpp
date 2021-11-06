@@ -31,7 +31,6 @@ void ProcessorConstructor(FILE* inputFile, FILE* stackLogFile, FILE* cpuLogFile)
     assert(stackLogFile);
     assert(cpuLogFile);
     
-    ProcessorConstructor(inputFile, stackLogFile, cpuLogFile);
     StackLogConstructor(stackLogFile);
 
     ProcessorStructure cpu = {};

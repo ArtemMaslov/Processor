@@ -1,23 +1,23 @@
 /// ƒобавить элемент в конец стека. ptr - это адрес double числа
-#define PUSH(ptr) StackPush(stk, number)
+#define PUSH(ptr) StackPush(stk, (ptr))
 
 #define GET_REG_INDEX(ptr)                                  \
-    GetRegIndex(code, &ip, ptr);                            \
-    if (regIndex >= regsCount)                              \
+    GetRegIndex(code, &ip, (ptr));                          \
+    if (*(ptr) >= regsCount)                                \
     {                                                       \
-        printf("IndexOutOfRangeRegister = %d", regIndex);   \
+        printf("IndexOutOfRangeRegister = %d", *(ptr));     \
         return false;                                       \
     }
 
-#define GET_DOUBLE_ARG(ptr) GetDoubleArg(code, &ip, ptr)
+#define GET_DOUBLE_ARG(ptr) GetDoubleArg(code, &ip, (ptr))
 
-#define GET_SIZE_T_ARG(ptr) GetSize_TArg(code, &ip, ptr)
+#define GET_SIZE_T_ARG(ptr) GetSize_TArg(code, &ip, (ptr))
 
 #define GET_REG_VALUE(ptr) cpu->regs[ptr]
 
 #define IF_REG(code)                                        \
     if (cmd.Reg)                                            \
-    {   code   }
+    {    code     }
 
 #define IF_NUMBER(code)                                     \
     if (cmd.Number)                                         \
@@ -33,19 +33,19 @@
 
 #define RAM_DELAY Sleep(RamSleep)
 
-#define POP(err_ptr) StackPop(stk, err_ptr)
+#define POP(err_ptr) StackPop(stk, (err_ptr))
 
-#define GET_DOUBLE(ptr) *((double*)ptr);
+#define GET_DOUBLE(ptr) *((double*)(ptr));
 
 #define STACK_DUMP(err)                                     \
-    if (err > 0)                                            \
+    if ((err) > 0)                                          \
         StackDump(stk, stdout);
 
 #define _RAM cpu->RAM
 
 #define _REGS cpu->regs
 
-#define JMP_TO(instruction) ip = (int)instruction
+#define JMP_TO(instruction) ip = (int)(instruction)
 
 #define JMP                                                 \
     {                                                       \
@@ -194,10 +194,11 @@ CMD_DEF(3, in, 0,
         }
     })
 
-CMD_DEF(4, out, 0, 
+CMD_DEF(4, out, 0,
     {
         int error = 0;
-        printf("%lf\n", GET_DOUBLE(POP(&error));
+        double number = GET_DOUBLE(POP(&error));
+        printf("%lf\n", number);
         STACK_DUMP(error);
     })
 
@@ -275,7 +276,7 @@ CMD_DEF(18, ret, 0,
         double retLabel = GET_DOUBLE(POP(&error));
         STACK_DUMP(error)
 
-        JMP_TO(retLabel)
+        JMP_TO(retLabel);
     })
 
 CMD_DEF(19, dsp, 0, 
@@ -321,7 +322,7 @@ CMD_DEF(23, int, 0,
         UNARY_OPERATION((int)(number))
     })
 
-CMD_DEF(24, meow, 0, 
+CMD_DEF(24, meow, -1, 
     {
         double number = 0;
         GET_DOUBLE_ARG(&number);
@@ -330,7 +331,8 @@ CMD_DEF(24, meow, 0,
             puts("ћ€€€ууу!");
     })
 
-
+#undef CMD_DEF
+        
 #undef PUSH
 #undef GET_REG_INDEX
 #undef GET_DOUBLE_ARG
@@ -351,6 +353,3 @@ CMD_DEF(24, meow, 0,
 #undef CALCULATE
 #undef UNARY_OPERATION
 #undef JMP_ACTION
-
-
-#undef CMD_DEF

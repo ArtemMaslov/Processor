@@ -11,7 +11,7 @@ const size_t LabelNameLength = 32;
 
 struct Label
 {
-    char*  msg    = nullptr;
+    char   msg[30];
     size_t ip     = 0;
     bool   inited = false;
 };

@@ -71,19 +71,19 @@ char* CreateOutFileName(char* src)
     }
 }
 
-int CallocString(char* dest, const char* src)
+int CallocString(char** dest, const char* src)
 {
     size_t length = strlen(src) + 1;
 
-    dest = (char*)calloc(length, sizeof(char));
+    *dest = (char*)calloc(length, sizeof(char));
     
-    if (!dest)
+    if (!(*dest))
     {
         puts("Не хватает памяти, чтобы создать имя выходного файла.\n"
                 "Введите имя выходного файла вторым параметром в командной строке.");
         return 1;
     }
 
-    strncpy(dest, src, length);
+    strncpy(*dest, src, length);
     return 0;
 }

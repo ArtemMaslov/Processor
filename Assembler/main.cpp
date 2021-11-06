@@ -20,8 +20,8 @@ int main(int argc, char* argv[])
 
     if (argc > 1)
     {
-        CallocString(listingFileName, "asm_listing.txt");
-        CallocString(asmLogsFileName, "asm_logs.html");
+        CallocString(&listingFileName, "asm_listing.txt");
+        CallocString(&asmLogsFileName, "asm_logs.html");
         outputFileName  = nullptr;
         
         if (argc > 2)
@@ -45,10 +45,10 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
     else
     {
-        const char* dgbInput   = "D:\\язык C\\Processor\\tests\\asm_src\\task1.code";
-        CallocString(listingFileName, "D:\\язык C\\Processor\\tests\\asm_listing.txt");
-        CallocString(asmLogsFileName, "D:\\язык C\\Processor\\tests\\AsmLogs.html");
-        CallocString(outputFileName,  "D:\\язык C\\Processor\\tests\\asm_out.asm");
+        const char* dgbInput   = "D:\\язык C\\Processor\\tests\\asm_src\\asm_jmp2.code";
+        CallocString(&listingFileName, "D:\\язык C\\Processor\\tests\\asm_listing.txt");
+        CallocString(&asmLogsFileName, "D:\\язык C\\Processor\\tests\\AsmLogs.html");
+        CallocString(&outputFileName,  "D:\\язык C\\Processor\\tests\\asm_out.asm");
         
         if ( (inputFile   = OpenFile(dgbInput, "r")       ) &&
              (outputFile  = OpenFile(outputFileName, "wb")) &&
@@ -75,4 +75,6 @@ int main(int argc, char* argv[])
         fclose(listingFile);
     if (logsFile)
         fclose(logsFile);
+
+    getchar();
 }

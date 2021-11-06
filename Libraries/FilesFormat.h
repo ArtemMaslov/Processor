@@ -29,7 +29,7 @@ FileHeader ReadFileHeader(FILE* file);
 
 char* CreateOutFileName(char* src);
 
-int CallocString(char* dest, const char* src);
+int CallocString(char** dest, const char* src);
 
 
 #endif

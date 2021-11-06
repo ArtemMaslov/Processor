@@ -12,7 +12,6 @@ int main(int argc, char* argv[])
     puts("ѕроцессор:");
 
     FILE* inputFile     = nullptr;
-    FILE* stackLogsFile = nullptr;
     FILE* cpuLogsFile   = nullptr;
 
     if (argc > 1)
@@ -21,8 +20,8 @@ int main(int argc, char* argv[])
         const char* cpuLogsFileName  = "cpu_logs.html";
 
         if ( (inputFile     = OpenFile(argv[1], "r")         ) &&
-             (stackLogsFile = OpenFile(stackLogFileName, "w")) &&
-             (cpuLogsFile   = OpenFile(cpuLogsFileName, "w") )   )
+             (stackLogFile = OpenFile(stackLogFileName, "w"))  &&
+             (cpuLogsFile   = OpenFile(cpuLogsFileName,  "w"))   )
         {
             ProcessorConstructor(inputFile, stackLogFile, cpuLogsFile);
         }
@@ -30,13 +29,13 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
     else
     {
-        const char* dgbInput     = "D:\\язык C\\Processor\\tests\\asm_out.asm";
+        const char* dgbInput     = "D:\\язык C\\Processor\\tests\\asm_src\\asm_jmp2_out.code";
         const char* dgbCpuLogs   = "D:\\язык C\\Processor\\tests\\cpu_logs.html";
         const char* dbgStackLogs = "D:\\язык C\\Processor\\tests\\stack_logs.html";
 
         if ( (inputFile     = OpenFile(dgbInput, "r")    ) &&
              (cpuLogsFile   = OpenFile(dgbCpuLogs, "w")  ) &&
-             (stackLogsFile = OpenFile(dbgStackLogs, "w"))   )
+             (stackLogFile  = OpenFile(dbgStackLogs, "w"))   )
         {
             ProcessorConstructor(inputFile, stackLogFile, cpuLogsFile);
         }
@@ -52,4 +51,6 @@ int main(int argc, char* argv[])
         fclose(stackLogFile);
     if (cpuLogsFile)
         fclose(cpuLogsFile);
+
+    getchar();
 }
