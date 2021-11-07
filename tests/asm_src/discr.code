@@ -1,0 +1,18 @@
+in
+pop qx
+in
+pop wx
+in
+pop ex
+
+push wx
+push wx
+mul
+push 4
+push ex
+push qx
+mul
+mul
+sub
+out
+hlt
