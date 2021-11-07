@@ -11,52 +11,55 @@
 #include "..\Libraries\FilesFormat.h"
 
 
-void GetDoubleArg(char* code, size_t* ip, double* number);
+static void GetArg(char* code, size_t* ip, size_t res_size, void* out_res);
 
 bool ParseText(Disassembler* disasm, FILE* outputFile);
 
 
-void DisassemblerConstructor(const char* inputFileName, const char* outputFileName)
+void DisassemblerConstructor(FILE* inputFile, FILE* outputFile)
 {
-    assert(inputFileName);
-    assert(outputFileName);
+    assert(inputFile);
+    assert(outputFile);
 
     Disassembler disasm = {};
     
-    if (FILE* inputFile = OpenFile(inputFileName, "rb"))
+    FileHeader header = ReadFileHeader(inputFile);
+
+    if (header.Signature == ProcessorFileHeader.Signature)
     {
-        FileHeader header = ReadFileHeader(inputFile);
-
-        if (header.Signature == ProcessorFileHeader.Signature)
+        if (header.ProcessorVersion == ProcessorFileHeader.ProcessorVersion &&
+            header.AssemblerVersion == ProcessorFileHeader.AssemblerVersion)
         {
-            if (header.DisasseblerVersion == ProcessorFileHeader.DisasseblerVersion &&
-                header.AssemblerVersion == ProcessorFileHeader.AssemblerVersion)
+            if (ReadFile(&disasm.text, &header, inputFile))
             {
-                if (ReadFile(&disasm.text, &header, inputFile))
-                {
-                    disasm.text.bufferSize--;
+                disasm.text.bufferSize--;
 
-                    if (FILE* outputFile = OpenFile(outputFileName, "w"))
-                    {
-                        ParseText(&disasm, outputFile);
-
-                        fclose(outputFile);
-                    }
-                }
+                ParseText(&disasm, outputFile);
             }
-            else
-                printf("Текущая версия процессора %d\n"
-                        "Версия процессора в файле %d\n"
-                        "Текущая версия ассемблера %d\n"
-                        "Версия ассемблера в файле %d\n",
-                    ProcessorFileHeader.ProcessorVersion, header.ProcessorVersion,
-                    ProcessorFileHeader.AssemblerVersion, header.AssemblerVersion);
         }
-        else 
-            printf("Неопознанная сигнатура файла <%s>", header.Signature);
-        fclose(inputFile);
+        else
+            printf("Текущая версия процессора %d\n"
+                   "Версия процессора в файле %d\n"
+                   "Текущая версия ассемблера %d\n"
+                   "Версия ассемблера в файле %d\n",
+                ProcessorFileHeader.ProcessorVersion, header.ProcessorVersion,
+                ProcessorFileHeader.AssemblerVersion, header.AssemblerVersion);
+    }
+    else
+    {
+        printf("Неопознанная сигнатура файла <%c%c%c%c>", 
+            (header.Signature % (0xFF)), 
+            (header.Signature & (0xFF << 8)) >> 8,
+            (header.Signature & (0xFF << 16)) >> 16,
+            (header.Signature & (0xFF << 24)) >> 24);
     }
 }
+
+#define CMD_DEF(cmdNumber, cmdName, argc, procCode, asmGen, disasm, ...)                                \
+    case cmd_##cmdName:                                                                                 \
+        fputs(#cmdName, outputFile);                                                                    \
+        disasm                                                                                          \
+        break;
 
 bool ParseText(Disassembler* disasm, FILE* outputFile)
 {
@@ -68,36 +71,15 @@ bool ParseText(Disassembler* disasm, FILE* outputFile)
     
     while (ip < codeLength)
     {
-        int error = 0;
-        double number1 = 0;
-        double number2 = 0;
-        switch (code[ip++])
+        Command cmd = {};
+        int val = 0;
+        val = code[ip++];
+        memmove(&cmd, &(val), sizeof(char));
+
+        unsigned char cmdType = cmd.type;
+        switch (cmdType)
         {
-            case CMD_PUSH:
-                GetDoubleArg(code, &ip, &number1);
-                fprintf(outputFile, "push %lf\n", number1);
-                break;
-            case CMD_POP:
-                fputs("pop\n", outputFile);
-                break;
-            case CMD_OUT:
-                fputs("out\n", outputFile);
-                break;
-            case CMD_ADD:
-                fputs("add\n", outputFile);
-                break;
-            case CMD_SUB:
-                fputs("sub\n", outputFile);
-                break;
-            case CMD_MUL:
-                fputs("mul\n", outputFile);
-                break;
-            case CMD_DIV:
-                fputs("div\n", outputFile);
-                break;
-            case CMD_HLT:
-                fputs("hlt\n", outputFile);
-                break;
+#include "..\Libraries\CommandsDef.h"
             default:
                 printf("Неизвестная команда: <%c>; ip = %zd", code[ip], ip);
                 return false;
@@ -107,19 +89,12 @@ bool ParseText(Disassembler* disasm, FILE* outputFile)
     return true;
 }
 
-void GetDoubleArg(char* code, size_t* ip, double* number)
+static void GetArg(char* code, size_t* ip, size_t res_size, void* out_res)
 {
     assert(code);
-    assert(number);
+    assert(out_res);
     assert(ip);
 
-    /*char* ptr1 = (char*)number;
-    char* ptr2 = code + (*ip);
-
-    for (size_t st = 0; st < sizeof(double); st++)
-    {
-        ptr1[st] = ptr2[st];
-    }*/
-    memmove(number, code + *ip, sizeof(double));
-    *ip += sizeof(double);
+    memmove(out_res, code + *ip, res_size);
+    *ip += res_size;
 }

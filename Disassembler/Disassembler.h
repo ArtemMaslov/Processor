@@ -11,7 +11,7 @@ struct Disassembler
 };
 
 
-void DisassemblerConstructor(const char* fileName, const char* outputFileName);
+void DisassemblerConstructor(FILE* inputFile, FILE* outputFile);
 
 
 

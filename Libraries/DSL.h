@@ -9,7 +9,7 @@
 
 /// ѕолучить номер регистра из кода. ptr - это указатель на выходные данные, тип size_t.
 #define GET_REG_INDEX(ptr)                                  \
-    GetArg(code, &ip, sizeof(size_t), (ptr));               \
+    GetArg(code, &ip, sizeof(char), (ptr));                 \
     if (*(ptr) >= regsCount)                                \
     {                                                       \
         printf("IndexOutOfRangeRegister = %d", *(ptr));     \
@@ -151,4 +151,52 @@
         ip += commandSize;                                                                      \
     }
 
+///***-***\\\--///***-------***\\\--///***-***\\\
+///***-***\\\--///DisasmDefines\\\--///***-***\\\
+///***-***\\\--///***-------***\\\--///***-***\\\
+
+
+/// ќбработать команду с аргументами.
+#define DisasmArgsCommand                                                                       \
+    {                                                                                           \
+        char output[30] = "";                                                                   \
+        size_t regIndex = 0;                                                                    \
+        double number   = 0;                                                                    \
+                                                                                                \
+        if (cmd.Reg && cmd.Number)                                                              \
+        {                                                                                       \
+            GetArg(code, &ip, sizeof(char), &regIndex);                                         \
+            GetArg(code, &ip, sizeof(double), &number);                                         \
+            sprintf(output, "%s + %lf", regNames[regIndex], number);                            \
+        }                                                                                       \
+        else if (cmd.Reg)                                                                       \
+        {                                                                                       \
+            GetArg(code, &ip, sizeof(char), &regIndex);                                         \
+            sprintf(output, "%s", regNames[regIndex]);                                          \
+        }                                                                                       \
+        else if (cmd.Number)                                                                    \
+        {                                                                                       \
+            GetArg(code, &ip, sizeof(double), &number);                                         \
+            sprintf(output, "%lf", number);                                                     \
+        }                                                                                       \
+        if (cmd.RAM)                                                                            \
+            sprintf(output, "[%s]", output);                                                    \
+        fprintf(outputFile, " %s\n", output);                                                   \
+    }
+
+/// ќбработать команду перехода.
+#define DisasmJumpCommand                                                                       \
+    {                                                                                           \
+        size_t label = 0;                                                                       \
+        GetArg(code, &ip, sizeof(size_t), &label);                                              \
+        fprintf(outputFile, " %zd\n", label);                                                   \
+    }
+
+/// ќбработать обычную команду.
+#define DisasmDefaultCommand                                                                    \
+    {                                                                                           \
+        fprintf(outputFile, "\n");                                                              \
+    }
+
 //#endif // !DSL_H_
+

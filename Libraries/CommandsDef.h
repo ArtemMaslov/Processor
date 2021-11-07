@@ -36,7 +36,8 @@ CMD_DEF(1, push, -1,
         PUSH(&number);
     )
     },
-    GenerateArgsCommand)
+    GenerateArgsCommand,
+    DisasmArgsCommand)
 
 CMD_DEF(2, pop, -1, 
     {
@@ -89,7 +90,8 @@ CMD_DEF(2, pop, -1,
         }
         STACK_DUMP(error);
     },
-    GenerateArgsCommand)
+    GenerateArgsCommand,
+    DisasmArgsCommand)
 
 CMD_DEF(3, in, 0, 
     {
@@ -105,7 +107,8 @@ CMD_DEF(3, in, 0,
             return false;
         }
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(4, out, 0,
     {
@@ -116,79 +119,92 @@ CMD_DEF(4, out, 0,
         else
             puts("");
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(5, add, 0, 
     {
         CALCULATE(+)
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(6, sub, 0, 
     {
         CALCULATE(-)
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(7, mul, 0, 
     {
         CALCULATE(*)
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(8, div, 0, 
     {
         CALCULATE(/)
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(9, hlt, 0,
     {
         return true;
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(10, jmp, -2, 
     {
         JMP;
     },
-    GenerateJumpCommand)
+    GenerateJumpCommand,
+    DisasmJumpCommand)
 
 CMD_DEF(11, ja, -2, 
     {
         JMP_ACTION(>)
     },
-    GenerateJumpCommand)
+    GenerateJumpCommand,
+    DisasmJumpCommand)
 
 CMD_DEF(12, jae, -2, 
     {
         JMP_ACTION(>=)
     },
-    GenerateJumpCommand)
+    GenerateJumpCommand,
+    DisasmJumpCommand)
 
 CMD_DEF(13, jb, -2, 
     {
         JMP_ACTION(<)
     },
-    GenerateJumpCommand)
+    GenerateJumpCommand,
+    DisasmJumpCommand)
 
 CMD_DEF(14, jbe, -2, 
     {
         JMP_ACTION(<=)
     },
-    GenerateJumpCommand)
+    GenerateJumpCommand,
+    DisasmJumpCommand)
 
 CMD_DEF(15, je, -2, 
     {
         JMP_ACTION(==)
     },
-    GenerateJumpCommand)
+    GenerateJumpCommand,
+    DisasmJumpCommand)
 
 CMD_DEF(16, jne, -2, 
     {
         JMP_ACTION(!=)
     },
-    GenerateJumpCommand)
+    GenerateJumpCommand,
+    DisasmJumpCommand)
 
 CMD_DEF(17, call, -2, 
     {
@@ -197,7 +213,8 @@ CMD_DEF(17, call, -2,
         
         JMP;
     },
-    GenerateJumpCommand)
+    GenerateJumpCommand,
+    DisasmJumpCommand)
 
 CMD_DEF(18, ret, 0, 
     {
@@ -207,7 +224,8 @@ CMD_DEF(18, ret, 0,
 
         JMP_TO(retLabel);
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(19, dsp, 0, 
     {
@@ -231,41 +249,47 @@ CMD_DEF(19, dsp, 0,
         }
         fflush(stdout);
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(20, cos, 0, 
     {
         UNARY_OPERATION(cos(number * PI / 180))
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(21, sin, 0, 
     {
         UNARY_OPERATION(sin(number * PI / 180))
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(22, sqrt, 0, 
     {
         UNARY_OPERATION(sqrt(number))
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
 CMD_DEF(23, int, 0, 
     {
         UNARY_OPERATION((int)(number))
     },
-    GenerateDefaultCommand)
+    GenerateDefaultCommand,
+    DisasmDefaultCommand)
 
-CMD_DEF(24, meow, -1, 
-    {
-        double number = 0;
-        GET_DOUBLE_ARG(&number);
-
-        for (int st = 0; st < (int)number; st++)
-            puts("Μÿÿÿσσσ!");
-    },
-    GenerateArgsCommand)
+//CMD_DEF(24, meow, -1, 
+//    {
+//        double number = 0;
+//        GET_DOUBLE_ARG(&number);
+//
+//        for (int st = 0; st < (int)number; st++)
+//            puts("Μÿÿÿσσσ!");
+//    },
+//    GenerateArgsCommand,
+//    DisasmArgsCommand)
 
 #undef CMD_DEF
         

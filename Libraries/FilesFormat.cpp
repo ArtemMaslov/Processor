@@ -69,6 +69,8 @@ char* CreateOutFileName(char* src)
         strncat(outputFileName, src, fileNameLength);
         strncat(outputFileName, "_out", 4);
     }
+
+    return outputFileName;
 }
 
 int CallocString(char** dest, const char* src)

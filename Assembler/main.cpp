@@ -46,9 +46,10 @@ int main(int argc, char* argv[])
     else
     {
         const char* dgbInput   = "D:\\язык C\\Processor\\tests\\asm_src\\task_queq.code";
+
         CallocString(&listingFileName, "D:\\язык C\\Processor\\tests\\asm_listing.txt");
         CallocString(&asmLogsFileName, "D:\\язык C\\Processor\\tests\\AsmLogs.html");
-        CallocString(&outputFileName,  "D:\\язык C\\Processor\\tests\\asm_out.asm");
+        CallocString(&outputFileName,  "D:\\язык C\\Processor\\tests\\asm_src\\asm_out.asm");
         
         if ( (inputFile   = OpenFile(dgbInput, "r")       ) &&
              (outputFile  = OpenFile(outputFileName, "wb")) &&

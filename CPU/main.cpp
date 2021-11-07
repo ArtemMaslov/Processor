@@ -20,8 +20,8 @@ int main(int argc, char* argv[])
         const char* stackLogFileName = "stack_logs.html";
         const char* cpuLogsFileName  = "cpu_logs.html";
 
-        if ( (inputFile     = OpenFile(argv[1], "r")         ) &&
-             (stackLogFile = OpenFile(stackLogFileName, "w"))  &&
+        if ( (inputFile     = OpenFile(argv[1],          "r")) &&
+             (stackLogFile  = OpenFile(stackLogFileName, "w"))  &&
              (cpuLogsFile   = OpenFile(cpuLogsFileName,  "w"))   )
         {
             ProcessorConstructor(inputFile, stackLogFile, cpuLogsFile);
@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
         const char* dgbCpuLogs   = "D:\\язык C\\Processor\\tests\\cpu_logs.html";
         const char* dbgStackLogs = "D:\\язык C\\Processor\\tests\\stack_logs.html";
 
-        if ( (inputFile     = OpenFile(dgbInput, "r")    ) &&
-             (cpuLogsFile   = OpenFile(dgbCpuLogs, "w")  ) &&
+        if ( (inputFile     = OpenFile(dgbInput,     "r")) &&
+             (cpuLogsFile   = OpenFile(dgbCpuLogs,   "w")) &&
              (stackLogFile  = OpenFile(dbgStackLogs, "w"))   )
         {
             ProcessorConstructor(inputFile, stackLogFile, cpuLogsFile);
@@ -53,5 +53,6 @@ int main(int argc, char* argv[])
     if (cpuLogsFile)
         fclose(cpuLogsFile);
 
+    getchar();
     getchar();
 }
