@@ -2,8 +2,6 @@
 #define COMMANDS_ENUM_H_
 
 
-//#define DEF_CMD (name, commandNumber, argumentCount, ...) CMD_##name = commandNumber,
-
 const size_t commandSize = sizeof(char);
 
 const int PushParamNumber = 1;

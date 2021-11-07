@@ -34,6 +34,8 @@ int main(int argc, char* argv[])
         {
             DisassemblerConstructor(inputFile, outputFile);
         }
+
+        free(outputFileName);
     }
 #ifdef DEBUG
     else

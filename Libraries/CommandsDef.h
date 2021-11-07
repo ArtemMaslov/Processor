@@ -10,31 +10,32 @@
 //    },
 //    ;)
 
+// Декодер аргумента в команде
 CMD_DEF(1, push, -1, 
     {
-    size_t regIndex = 0;
-    double regValue = 0;
-    double number  = 0;
-    IF_REG
-    (
-        GET_REG_INDEX(&regIndex);
-        regValue = GET_REG_VALUE(regIndex);
-    )
-    IF_NUMBER
-    (
-        GET_DOUBLE_ARG(&number);
-    )
-
-    number += regValue;
-    IF_RAM
-    (
-        PUSH(_RAM + (int)number);
-        RAM_DELAY;
-    )
-    ELSE
-    (
-        PUSH(&number);
-    )
+        size_t regIndex = 0;
+        double regValue = 0;
+        double number  = 0;
+        IF_REG
+        (
+            GET_REG_INDEX(&regIndex);
+            regValue = GET_REG_VALUE(regIndex);
+        )
+        IF_NUMBER
+        (
+            GET_DOUBLE_ARG(&number);
+        )
+        
+        number += regValue;
+        IF_RAM
+        (
+            PUSH(_RAM + (int)number);
+            RAM_DELAY;
+        )
+        ELSE
+        (
+            PUSH(&number);
+        )
     },
     GenerateArgsCommand,
     DisasmArgsCommand)
