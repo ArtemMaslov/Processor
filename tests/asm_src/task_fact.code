@@ -1,4 +1,4 @@
-in
+push 5
 call fact
 out
 stop:

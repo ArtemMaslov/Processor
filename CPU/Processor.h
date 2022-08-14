@@ -9,7 +9,7 @@
 const size_t DispOffset = 128;
 const size_t DispWidthD = 60;
 const size_t DispHeightD = 60;
-const size_t RamSize = DispOffset + DispWidthD * DispHeightD / (8 * sizeof(double)) + 1;
+const size_t RamSize = DispOffset + DispWidthD * DispHeightD / (sizeof(double)) + 1;
 const long   RamSleep = 0;
 
 struct ProcessorStructure

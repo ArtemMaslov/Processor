@@ -10,7 +10,7 @@
 //    },
 //    ;)
 
-// Декодер аргумента в команде
+// ???Р”РµРєРѕРґРµСЂ Р°СЂРіСѓРјРµРЅС‚Р° РІ РєРѕРјР°РЅРґРµ???
 CMD_DEF(1, push, -1, 
     {
         size_t regIndex = 0;
@@ -60,12 +60,12 @@ CMD_DEF(2, pop, -1,
                     GET_DOUBLE_ARG(&number);
                 )
 
-                int ramIndex = (int)number1 + (int)(_REGS[regIndex]);
-                if (ramIndex < DispOffset) // Оперативная память
+                int ramIndex = (int)number + (int)(_REGS[regIndex]);
+                if (ramIndex < DispOffset) // РћРїРµСЂР°С‚РёРІРЅР°СЏ РїР°РјСЏС‚СЊ
                 {
                     _RAM[ramIndex] = GET_DOUBLE(POP(&error));
                 }
-                else // Видео память
+                else // Р’РёРґРµРѕ РїР°РјСЏС‚СЊ
                 {
                     ramIndex = ramIndex - DispOffset;
                     char ramByte = ((char*)cpu->RAM)[DispOffset * sizeof(double) + ramIndex / 8];
@@ -97,14 +97,14 @@ CMD_DEF(2, pop, -1,
 CMD_DEF(3, in, 0, 
     {
         double doubleVal = 0;
-        puts("Введите число (Не число для завершения программы):");
+        puts("Р’РІРµРґРёС‚Рµ С‡РёСЃР»Рѕ (РќРµ С‡РёСЃР»Рѕ РґР»СЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРѕРіСЂР°РјРјС‹):");
         if (scanf("%lf", &doubleVal))
         {
             PUSH(&doubleVal);
         }
         else
         {
-            printf("Программа завершена\n");
+            printf("РџСЂРѕРіСЂР°РјРјР° Р·Р°РІРµСЂС€РµРЅР°\n");
             return false;
         }
     },
@@ -209,7 +209,7 @@ CMD_DEF(16, jne, -2,
 
 CMD_DEF(17, call, -2, 
     {
-        double retLabel = (double)ip + sizeof (int);
+        double retLabel = (double)ip + sizeof (size_t);
         PUSH(&retLabel);
         
         JMP;
@@ -287,7 +287,7 @@ CMD_DEF(23, int, 0,
 //        GET_DOUBLE_ARG(&number);
 //
 //        for (int st = 0; st < (int)number; st++)
-//            puts("Мяяяууу!");
+//            puts("РњСЏСЏСЏСѓСѓСѓ!");
 //    },
 //    GenerateArgsCommand,
 //    DisasmArgsCommand)

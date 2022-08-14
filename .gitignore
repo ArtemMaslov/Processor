@@ -31,11 +31,27 @@
 *.out
 *.app
 
+.vs
+Debug
+Release
+x86
+x64
+Assembler/Debug
+Assembler/Release
+Assembler/x64
+Assembler/x86
 
-.vs/*
-*/Debug/*
-Debug/*
-CPU/x64/*
-Assembler/x64/*
-Disassembler/x64/*
-Debug/x64/*
+Disassembler/Debug
+Disassembler/Release
+Disassembler/x64
+Disassembler/x86
+
+CPU/Debug
+CPU/Release
+CPU/x64
+CPU/x86
+
+Debugger/Debug
+Debugger/Release
+Debugger/x64
+Debugger/x86

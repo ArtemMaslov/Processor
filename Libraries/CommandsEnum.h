@@ -38,21 +38,10 @@ const char CommandsName[][8] =
 
 const char regNames[][3] = 
 {
-    "qx",
-    "wx",
-    "ex",
-
-    "rx",
-    "tx",
-    "yx",
-
     "ax",
-    "sx",
+    "bx",
+    "cx",
     "dx",
-
-    "fx",
-    "gx",
-    "hx",
 };
 
 const size_t regsCount = sizeof(regNames) / sizeof(regNames[0]);

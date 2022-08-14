@@ -26,6 +26,7 @@ int main(int argc, char* argv[])
         
         if (argc > 2)
         {
+            outputFileName = CreateOutFileName(argv[2]);
             outputFile = OpenFile(argv[2], "wb");
         }
         else
@@ -45,16 +46,19 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
     else
     {
-        const char* dgbInput   = "D:\\язык C\\Processor\\tests\\asm_src\\task_queq.code";
+        const char* dgbInput   = "..\\..\\tests\\asm_src\\task_circle.code";
+        //const char* dgbInput   = "compiled0.code";
 
-        CallocString(&listingFileName, "D:\\язык C\\Processor\\tests\\asm_listing.txt");
-        CallocString(&asmLogsFileName, "D:\\язык C\\Processor\\tests\\AsmLogs.html");
-        CallocString(&outputFileName,  "D:\\язык C\\Processor\\tests\\asm_src\\asm_out.asm");
+        CallocString(&listingFileName, "asm_listing.txt");
+        CallocString(&asmLogsFileName, "AsmLogs.html");
+        CallocString(&outputFileName,  "..\\..\\tests\\asm_src\\task_circle.asm");
         
-        if ( (inputFile   = OpenFile(dgbInput, "r")       ) &&
-             (outputFile  = OpenFile(outputFileName, "wb")) &&
-             (listingFile = OpenFile(listingFileName, "w")) &&
-             (logsFile    = OpenFile(asmLogsFileName, "w"))   )
+        inputFile   = OpenFile(dgbInput, "r");
+        outputFile  = OpenFile(outputFileName, "wb");
+        listingFile = OpenFile(listingFileName, "w");
+        logsFile    = OpenFile(asmLogsFileName, "w");
+
+        if ( inputFile && outputFile && listingFile && logsFile)
         {
             AssemblerConstructor(inputFile, outputFile, listingFile, logsFile);
         }
@@ -77,5 +81,5 @@ int main(int argc, char* argv[])
     if (logsFile)
         fclose(logsFile);
 
-    getchar();
+    //getchar();
 }

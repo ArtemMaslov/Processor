@@ -30,9 +30,9 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
     else
     {
-        const char* dgbInput     = "D:\\язык C\\Processor\\tests\\asm_src\\task_queq_out.code";
-        const char* dgbCpuLogs   = "D:\\язык C\\Processor\\tests\\cpu_logs.html";
-        const char* dbgStackLogs = "D:\\язык C\\Processor\\tests\\stack_logs.html";
+        const char* dgbInput     = "..\\..\\tests\\asm_src\\comp.asm";
+        const char* dgbCpuLogs   = "cpu_logs.html";
+        const char* dbgStackLogs = "stack_logs.html";
 
         if ( (inputFile     = OpenFile(dgbInput,     "r")) &&
              (cpuLogsFile   = OpenFile(dgbCpuLogs,   "w")) &&
@@ -53,6 +53,6 @@ int main(int argc, char* argv[])
     if (cpuLogsFile)
         fclose(cpuLogsFile);
 
-    getchar();
-    getchar();
+    //getchar();
+    //getchar();
 }

@@ -46,9 +46,10 @@ void ParseFileToLines(Text* text)
 {
     assert(text);
 
-    char* ptr = text->buffer;
-    size_t stringsCount = 0;
-    bool stringStarted = false;
+    char*  ptr           = text->buffer;
+    size_t stringsCount  = 0;
+    bool   stringStarted = false;
+
     for (size_t st = 0; st < text->bufferSize; st++)
     {
         if (ptr[st] != '\n' && ptr[st] != ' ' && ptr[st] != '\t' && !stringStarted)
@@ -61,9 +62,9 @@ void ParseFileToLines(Text* text)
             stringStarted = false;
         }
     }
+
     text->stringsCount = stringsCount;
-    
-    text->strings = (String*)calloc(stringsCount, sizeof(String));
+    text->strings      = (String*)calloc(stringsCount, sizeof(String));
 
     if (text->strings)
     {
@@ -75,8 +76,6 @@ void ParseFileToLines(Text* text)
 
         for (size_t st = 0; st < bufferSize; st++)
         {
-            if (st == bufferSize - 2)
-                puts("");
             char c = ptr[st];
             if (ptr[st] != '\n' && ptr[st] != ' ' && ptr[st] != '\t' && !stringStarted)
             {
@@ -86,7 +85,7 @@ void ParseFileToLines(Text* text)
             else if ((ptr[st] == '\n' || ptr[st] == '\0') && stringStarted)
             {
                 text->strings[stringIndex].startIndex = startIndex;
-                text->strings[stringIndex].Length = st - startIndex;
+                text->strings[stringIndex].Length     = st - startIndex;
 
                 ptr[st] = '\0';
 

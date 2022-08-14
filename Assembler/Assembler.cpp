@@ -15,7 +15,7 @@
 
 static FILE* logFile;
 char* listingFileName = nullptr;
-char* asmLogsFileName = nullptr;
+char* asmLogsFileName = nullptr; 
 char* outputFileName = nullptr;
 
 
@@ -69,13 +69,15 @@ void AssemblerConstructor(FILE* inputFile, FILE* outputFile, FILE* listingFile, 
     {
         LogLine(logFile, "Файл успешно прочитан");
         ParseFileToLines(&assembler.text);
-                    
+        
         CreateListingFileHeader(listingFile, nullptr, outputFileName);
 
         assembler.labels = (Label*)calloc(LabelsCount, sizeof(Label));
         assembler.fixUps = (FixUp*)calloc(FixUpsCount, sizeof(FixUp));
 
         bool result = false;
+
+        size_t headerSize = sizeof(FileHeader);
 
         GenerateHeader(&assembler);
 

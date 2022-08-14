@@ -1,0 +1,120 @@
+	; Инициализация
+	push 0
+	pop ax   ; Угол
+
+	; 60 x 60 Разрешение экрана
+	; 128 - Смещение для видео памяти
+
+	; Цикл угла от 0 до 45
+iteration:
+
+	; Вычисляем синус и косинус угла
+	push ax
+	sin
+	pop bx
+	push ax
+	cos
+	pop cx
+
+	; Находим относительные координаты точки
+	push cx
+	push 20
+	mul
+	int
+	pop cx ; x
+	push bx
+	push 20
+	mul
+	int
+	pop bx ; y
+
+	; Рисуем 8 точек
+	; Горизонтальные ()
+	push ax
+	call drawBrackets
+	pop ax
+
+	; Меняем x на y
+	push bx
+	pop dx
+	push cx
+	pop bx
+	push dx
+	pop cx
+
+	; Вертикальные()
+	push ax
+	call drawBrackets
+	pop ax
+
+	; Итерация
+	push ax
+	push 1
+	add
+	pop ax
+	; Условие выхода из цикла
+	push ax
+	push 45
+	ja stop
+
+	jmp iteration
+
+; Рисует точку
+draw_point:
+	pop dx
+	pop ax ; y
+	pop dx ; x
+	push dx
+
+	push ax
+	push 60
+	mul
+	push dx
+	add
+	push 128
+	add
+	pop dx
+	push 1
+	pop [dx]
+
+	ret
+
+drawBrackets:
+	push 30
+	push cx
+	sub
+	push 30
+	push bx
+	sub
+	call draw_point
+
+	push 30
+	push cx
+	sub
+	push 30
+	push bx
+	add
+	call draw_point
+
+	push 30
+	push cx
+	add
+	push 30
+	push bx
+	sub
+	call draw_point
+
+	push 30
+	push cx
+	add
+	push 30
+	push bx
+	add
+	call draw_point
+
+	ret
+
+stop:
+
+	dsp
+	hlt
